@@ -1,0 +1,5 @@
+javaoperatorsdk:
+  controllers:
+    customservicecontroller:
+      retry:
+        maxAttempts: 3
