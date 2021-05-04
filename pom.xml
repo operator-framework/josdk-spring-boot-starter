@@ -9,6 +9,24 @@
     <name>Java Operator SDK Spring Boot Starter</name>
     <description>Spring Boot starter for the Java Operator SDK</description>
     <packaging>jar</packaging>
+    <url>https://github.com/java-operator-sdk/operator-framework-spring-boot-starter</url>
+
+    <licenses>
+        <license>
+            <name>Apache 2 License</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.html</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Adam Sandor</name>
+            <email>adam.sandor@container-solutions.com</email>
+        </developer>
+        <developer>
+            <name>Attila Meszaros</name>
+            <email>csviri@gmail.com</email>
+        </developer>
+    </developers>
 
     <properties>
         <java.version>11</java.version>
