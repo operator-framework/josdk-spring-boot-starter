@@ -8,6 +8,11 @@ target
 # BlueJ files
 *.ctxt
 
+# Eclipse
+.classpath
+.project
+.settings
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
