@@ -6,7 +6,7 @@
 
   <groupId>io.javaoperatorsdk</groupId>
   <artifactId>operator-framework-spring-boot-starter-parent</artifactId>
-  <version>1.8.5-SNAPSHOT</version>
+  <version>1.9.0-SNAPSHOT</version>
   <name>Java Operator SDK Spring Boot Starter - Parent</name>
   <packaging>pom</packaging>
   <url>https://github.com/java-operator-sdk/operator-framework-spring-boot-starter</url>
@@ -17,7 +17,12 @@
       <url>https://www.apache.org/licenses/LICENSE-2.0.html</url>
     </license>
   </licenses>
+  
   <developers>
+    <developer>
+      <name>Daniel Lavoie</name>
+      <email>dlavoie@live.ca</email>
+    </developer>
     <developer>
       <name>Adam Sandor</name>
       <email>adam.sandor@container-solutions.com</email>
@@ -32,33 +37,65 @@
     <java.version>11</java.version>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
-    <josdk.version>1.8.4</josdk.version>
+    <spring-boot.version>2.5.0</spring-boot.version>
+    <josdk.version>1.9.0</josdk.version>
     <surefire.version>3.0.0-M5</surefire.version>
+    <fabric8-client.version>5.3.1</fabric8-client.version>
   </properties>
 
   <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
-      </plugin>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>${spring-boot.version}</version>
-      </plugin>
-    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
   <modules>
     <module>starter</module>
+    <module>starter-test</module>
     <module>samples</module>
   </modules>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>io.javaoperatorsdk</groupId>
+        <artifactId>operator-framework-spring-boot-starter</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.javaoperatorsdk</groupId>
+        <artifactId>operator-framework-spring-boot-starter-test</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>io.javaoperatorsdk</groupId>
+        <artifactId>operator-framework</artifactId>
+        <version>${josdk.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.javaoperatorsdk</groupId>
+        <artifactId>operator-framework-samples-common</artifactId>
+        <version>${josdk.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>io.fabric8</groupId>
+        <artifactId>kubernetes-server-mock</artifactId>
+        <version>${fabric8-client.version}</version>
+      </dependency>
+    
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
