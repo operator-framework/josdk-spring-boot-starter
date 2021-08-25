@@ -7,7 +7,7 @@
     <artifactId>operator-framework-spring-boot-starter-parent</artifactId>
     <groupId>io.javaoperatorsdk</groupId>
     <version>1.9.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>operator-framework-spring-boot-starter</artifactId>
