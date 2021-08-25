@@ -14,7 +14,6 @@
   <name>Java Operator SDK Spring Boot Starter Test</name>
   <description>Spring Boot test starter for the Java Operator SDK</description>
   <artifactId>operator-framework-spring-boot-starter-test</artifactId>
-  <url>https://github.com/java-operator-sdk/operator-framework-spring-boot-starter-test</url>
 
   <licenses>
     <license>
