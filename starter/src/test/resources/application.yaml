@@ -4,8 +4,8 @@ javaoperatorsdk:
     password: password
     masterUrl: http://master.url
 
-  controllers:
-    testcontroller:
+  reconcilers:
+    testreconciler:
       retry:
         maxAttempts: 3
         initialInterval: 1000

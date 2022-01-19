@@ -1,6 +1,6 @@
 javaoperatorsdk:
-  controllers:
-    customservicecontroller:
+  reconcilers:
+    customservicereconciler:
       retry:
         maxAttempts: 3
 

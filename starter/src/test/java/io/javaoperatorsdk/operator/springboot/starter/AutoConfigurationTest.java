@@ -5,16 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.javaoperatorsdk.operator.ControllerUtils;
 import io.javaoperatorsdk.operator.Operator;
-import io.javaoperatorsdk.operator.api.ResourceController;
-import java.util.List;
+import io.javaoperatorsdk.operator.ReconcilerUtils;
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.List;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -26,7 +27,7 @@ public class AutoConfigurationTest {
 
   @Autowired private KubernetesClient kubernetesClient;
 
-  @Autowired private List<ResourceController> resourceControllers;
+  @Autowired private List<Reconciler<?>> reconcilers;
 
   @Test
   public void loadsKubernetesClientPropertiesProperly() {
@@ -39,7 +40,7 @@ public class AutoConfigurationTest {
   @Test
   public void loadsRetryPropertiesProperly() {
     final var retryProperties =
-        config.getControllers().get(ControllerUtils.getNameFor(TestController.class)).getRetry();
+        config.getReconcilers().get(ReconcilerUtils.getNameFor(TestReconciler.class)).getRetry();
     assertEquals(3, retryProperties.getMaxAttempts());
     assertEquals(1000, retryProperties.getInitialInterval());
     assertEquals(1.5, retryProperties.getIntervalMultiplier());
@@ -52,8 +53,8 @@ public class AutoConfigurationTest {
   }
 
   @Test
-  public void resourceControllersAreDiscovered() {
-    assertEquals(1, resourceControllers.size());
-    assertTrue(resourceControllers.get(0) instanceof TestController);
+  public void reconcilersAreDiscovered() {
+    assertEquals(1, reconcilers.size());
+    assertTrue(reconcilers.get(0) instanceof TestReconciler);
   }
 }

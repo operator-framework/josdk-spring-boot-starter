@@ -9,10 +9,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class OperatorConfigurationProperties {
 
   private KubernetesClientProperties client = new KubernetesClientProperties();
-  private Map<String, ControllerProperties> controllers = Collections.emptyMap();
+  private Map<String, ReconcilerProperties> reconcilers = Collections.emptyMap();
   private boolean checkCrdAndValidateLocalModel = true;
   private int concurrentReconciliationThreads =
-      ConfigurationService.DEFAULT_RECONCILIATION_THREADS_NUMBER;
+    ConfigurationService.DEFAULT_RECONCILIATION_THREADS_NUMBER;
 
   public KubernetesClientProperties getClient() {
     return client;
@@ -22,12 +22,12 @@ public class OperatorConfigurationProperties {
     this.client = client;
   }
 
-  public Map<String, ControllerProperties> getControllers() {
-    return controllers;
+  public Map<String, ReconcilerProperties> getReconcilers() {
+    return reconcilers;
   }
 
-  public void setControllers(Map<String, ControllerProperties> controllers) {
-    this.controllers = controllers;
+  public void setReconcilers(Map<String, ReconcilerProperties> reconcilers) {
+    this.reconcilers = reconcilers;
   }
 
   public boolean getCheckCrdAndValidateLocalModel() {

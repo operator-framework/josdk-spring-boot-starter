@@ -5,13 +5,15 @@ import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.http.HttpClient;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
-import io.javaoperatorsdk.operator.ControllerUtils;
+import io.fabric8.openshift.client.OpenShiftConfig;
 import io.javaoperatorsdk.operator.Operator;
-import io.javaoperatorsdk.operator.api.ResourceController;
+import io.javaoperatorsdk.operator.ReconcilerUtils;
 import io.javaoperatorsdk.operator.api.config.AbstractConfigurationService;
 import io.javaoperatorsdk.operator.api.config.RetryConfiguration;
 import io.javaoperatorsdk.operator.api.config.Utils;
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.config.runtime.AnnotationConfiguration;
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties({OperatorConfigurationProperties.class})
+@EnableConfigurationProperties(OperatorConfigurationProperties.class)
 public class OperatorAutoConfiguration extends AbstractConfigurationService {
   @Autowired private OperatorConfigurationProperties configuration;
 
@@ -33,11 +35,15 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
 
   @Bean
   @ConditionalOnMissingBean
-  public KubernetesClient kubernetesClient() {
+  public KubernetesClient kubernetesClient(Optional<HttpClient.Factory> httpClientFactory) {
     final var config = getClientConfiguration();
     return configuration.getClient().isOpenshift()
-        ? new DefaultOpenShiftClient(config)
-        : new DefaultKubernetesClient(config);
+      ? httpClientFactory
+        .map(it -> new DefaultOpenShiftClient(it.createHttpClient(config), new OpenShiftConfig(config)))
+        .orElseGet(() -> new DefaultOpenShiftClient(config))
+      : httpClientFactory
+        .map(it -> new DefaultKubernetesClient(it.createHttpClient(config), config))
+        .orElseGet(() -> new DefaultKubernetesClient(config));
   }
 
   @Override
@@ -57,33 +63,49 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
   }
 
   @Bean
+  @ConditionalOnMissingBean(ResourceClassResolver.class)
+  public ResourceClassResolver resourceClassResolver() {
+    return new NaiveResourceClassResolver();
+  }
+
+  @Bean(destroyMethod = "stop")
   @ConditionalOnMissingBean(Operator.class)
   public Operator operator(
-      KubernetesClient kubernetesClient,
-      List<ResourceController<?>> resourceControllers) {
+    KubernetesClient kubernetesClient,
+    List<Reconciler<?>> reconcilers,
+    ResourceClassResolver resourceClassResolver) {
     Operator operator = new Operator(kubernetesClient, this);
-    
-    resourceControllers.forEach(r -> operator.register(processController(r)));
-    
+
+    reconcilers.forEach(r -> operator.register(processReconciler(r, resourceClassResolver)));
+
+    operator.start();
+
     return operator;
   }
 
-  private ResourceController<?> processController(ResourceController<?> controller) {
-    final var controllerPropertiesMap = configuration.getControllers();
-    final var name = ControllerUtils.getNameFor(controller);
-    var controllerProps = controllerPropertiesMap.get(name);
-    register(new ConfigurationWrapper<>(controller, controllerProps));
-    return controller;
+  private Reconciler<?> processReconciler(
+    Reconciler<?> reconciler, ResourceClassResolver resourceClassResolver) {
+    final var reconcilerPropertiesMap = configuration.getReconcilers();
+    final var name = ReconcilerUtils.getNameFor(reconciler);
+    var controllerProps = reconcilerPropertiesMap.get(name);
+    register(new ConfigurationWrapper(reconciler, controllerProps, resourceClassResolver));
+    return reconciler;
   }
 
   private static class ConfigurationWrapper<R extends CustomResource<?, ?>>
-      extends AnnotationConfiguration<R> {
-    private final Optional<ControllerProperties> properties;
+    extends AnnotationConfiguration<R> {
+    private final Optional<ReconcilerProperties> properties;
+    private final Reconciler<R> reconciler;
+    private final ResourceClassResolver resourceClassResolver;
 
     private ConfigurationWrapper(
-        ResourceController<R> controller, ControllerProperties properties) {
-      super(controller);
+      Reconciler<R> reconciler,
+      ReconcilerProperties properties,
+      ResourceClassResolver resourceClassResolver) {
+      super(reconciler);
+      this.reconciler = reconciler;
       this.properties = Optional.ofNullable(properties);
+      this.resourceClassResolver = resourceClassResolver;
     }
 
     @Override
@@ -92,30 +114,25 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
     }
 
     @Override
-    public String getCRDName() {
-      return properties.map(ControllerProperties::getCRDName).orElse(super.getCRDName());
-    }
-
-    @Override
     public String getFinalizer() {
-      return properties.map(ControllerProperties::getFinalizer).orElse(super.getFinalizer());
+      return properties.map(ReconcilerProperties::getFinalizer).orElse(super.getFinalizer());
     }
 
     @Override
     public boolean isGenerationAware() {
       return properties
-          .map(ControllerProperties::isGenerationAware)
-          .orElse(super.isGenerationAware());
+        .map(ReconcilerProperties::isGenerationAware)
+        .orElse(super.isGenerationAware());
     }
 
     @Override
-    public Class<R> getCustomResourceClass() {
-      return super.getCustomResourceClass();
+    public Class<R> getResourceClass() {
+      return resourceClassResolver.resolveCustomResourceClass(reconciler);
     }
 
     @Override
     public Set<String> getNamespaces() {
-      return properties.map(ControllerProperties::getNamespaces).orElse(super.getNamespaces());
+      return properties.map(ReconcilerProperties::getNamespaces).orElse(super.getNamespaces());
     }
 
     @Override
@@ -126,9 +143,9 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
     @Override
     public RetryConfiguration getRetryConfiguration() {
       return properties
-          .map(ControllerProperties::getRetry)
-          .map(RetryProperties::asRetryConfiguration)
-          .orElse(RetryConfiguration.DEFAULT);
+        .map(ReconcilerProperties::getRetry)
+        .map(RetryProperties::asRetryConfiguration)
+        .orElse(RetryConfiguration.DEFAULT);
     }
   }
 

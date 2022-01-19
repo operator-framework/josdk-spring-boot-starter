@@ -51,7 +51,7 @@ public class KubernetesClientProperties {
   }
 
   public KubernetesClientProperties setTrustSelfSignedCertificates(
-      boolean trustSelfSignedCertificates) {
+    boolean trustSelfSignedCertificates) {
     this.trustSelfSignedCertificates = trustSelfSignedCertificates;
     return this;
   }
