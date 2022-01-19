@@ -12,14 +12,14 @@ public class SampleComponent {
 
   private final KubernetesClient kubernetesClient;
 
-  private final CustomServiceController customServiceController;
+  private final CustomServiceReconciler customServiceReconciler;
 
   public SampleComponent(
       Operator operator,
       KubernetesClient kubernetesClient,
-      CustomServiceController customServiceController) {
+      CustomServiceReconciler customServiceReconciler) {
     this.operator = operator;
     this.kubernetesClient = kubernetesClient;
-    this.customServiceController = customServiceController;
+    this.customServiceReconciler = customServiceReconciler;
   }
 }

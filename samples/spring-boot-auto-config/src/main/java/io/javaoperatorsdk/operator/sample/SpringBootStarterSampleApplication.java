@@ -1,6 +1,6 @@
 package io.javaoperatorsdk.operator.sample;
 
-import io.javaoperatorsdk.operator.api.Controller;
+import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.FilterType;
  */
 @ComponentScan(
     includeFilters = {
-      @ComponentScan.Filter(type = FilterType.ANNOTATION, value = Controller.class)
+      @ComponentScan.Filter(type = FilterType.ANNOTATION, value = ControllerConfiguration.class)
     })
 @SpringBootApplication
 public class SpringBootStarterSampleApplication {
