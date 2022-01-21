@@ -2,6 +2,7 @@ package io.javaoperatorsdk.operator.springboot.starter.test;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("javaoperatorsdk.test")

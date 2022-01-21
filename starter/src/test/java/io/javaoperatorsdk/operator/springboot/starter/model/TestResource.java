@@ -6,4 +6,5 @@ import io.fabric8.kubernetes.model.annotation.Version;
 
 @Group("sample.javaoperatorsdk")
 @Version("v1")
-public class TestResource extends CustomResource {}
+public class TestResource extends CustomResource {
+}

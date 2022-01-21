@@ -1,0 +1,42 @@
+name: Verify Pull Request
+
+env:
+  MAVEN_ARGS: -V -ntp -e
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+on:
+  pull_request:
+    branches: [ main, v1 ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ 11, 17 ]
+        distribution: [ temurin ]
+        kubernetes: [ 'v1.17.13','v1.18.20','v1.19.14','v1.20.10','v1.21.4', 'v1.22.1', 'v1.23.0' ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Java and Maven
+        uses: actions/setup-java@v2
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+      - name: Check code format
+        run: |
+          ./mvnw ${MAVEN_ARGS} formatter:validate -Dconfigfile=$PWD/contributing/eclipse-google-style.xml --file pom.xml
+          ./mvnw ${MAVEN_ARGS} impsort:check --file pom.xml
+      - name: Run unit tests
+        run: ./mvnw ${MAVEN_ARGS} -B test --file pom.xml
+      - name: Set up Minikube
+        uses: manusa/actions-setup-minikube@v2.4.3
+        with:
+          minikube version: 'v1.24.0'
+          kubernetes version: ${{ matrix.kubernetes }}
+          driver: 'docker'
+      - name: Run integration tests
+        run: ./mvnw ${MAVEN_ARGS} -B package -P no-unit-tests --file pom.xml
