@@ -21,6 +21,7 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.mockwebserver.Context;
 import io.javaoperatorsdk.operator.springboot.starter.OperatorAutoConfiguration;
+
 import okhttp3.mockwebserver.MockWebServer;
 
 @Configuration
@@ -28,36 +29,38 @@ import okhttp3.mockwebserver.MockWebServer;
 @EnableConfigurationProperties(TestConfigurationProperties.class)
 public class TestConfiguration {
 
-	private static final Logger log = LoggerFactory.getLogger(TestConfiguration.class);
+  private static final Logger log = LoggerFactory.getLogger(TestConfiguration.class);
 
-	@Bean
-	public KubernetesMockServer k8sMockServer() {
-		var mockServer = new MockWebServer();
-		final var server = new KubernetesMockServer(new Context(), mockServer, new HashMap<>(),
-				new KubernetesCrudDispatcher(Collections.emptyList()), true);
-		server.init();
+  @Bean
+  public KubernetesMockServer k8sMockServer() {
+    var mockServer = new MockWebServer();
+    final var server = new KubernetesMockServer(new Context(), mockServer, new HashMap<>(),
+        new KubernetesCrudDispatcher(Collections.emptyList()), true);
+    server.init();
 
-		return server;
-	}
+    return server;
+  }
 
-	@Bean
-	public KubernetesClient kubernetesClient(KubernetesMockServer server, TestConfigurationProperties properties)
-			throws InterruptedException {
-		final var client = server.createClient();
+  @Bean
+  public KubernetesClient kubernetesClient(KubernetesMockServer server,
+      TestConfigurationProperties properties)
+      throws InterruptedException {
+    final var client = server.createClient();
 
-		Stream.concat(properties.getCrdPaths().stream(), properties.getGlobalCrdPaths().stream()).forEach(crdPath -> {
-			CustomResourceDefinition crd;
-			try {
-				crd = Serialization.unmarshal(new FileInputStream(ResourceUtils.getFile(crdPath)));
-			} catch (FileNotFoundException e) {
-				log.warn("CRD with path {} not found!", crdPath);
-				e.printStackTrace();
-				return;
-			}
+    Stream.concat(properties.getCrdPaths().stream(), properties.getGlobalCrdPaths().stream())
+        .forEach(crdPath -> {
+          CustomResourceDefinition crd;
+          try {
+            crd = Serialization.unmarshal(new FileInputStream(ResourceUtils.getFile(crdPath)));
+          } catch (FileNotFoundException e) {
+            log.warn("CRD with path {} not found!", crdPath);
+            e.printStackTrace();
+            return;
+          }
 
-			client.apiextensions().v1().customResourceDefinitions().create(crd);
-		});
+          client.apiextensions().v1().customResourceDefinitions().create(crd);
+        });
 
-		return client;
-	}
+    return client;
+  }
 }

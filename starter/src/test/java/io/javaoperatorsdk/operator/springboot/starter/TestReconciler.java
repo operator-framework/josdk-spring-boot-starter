@@ -1,8 +1,9 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
+import org.springframework.stereotype.Component;
+
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.springboot.starter.model.TestResource;
-import org.springframework.stereotype.Component;
 
 @Component
 @ControllerConfiguration

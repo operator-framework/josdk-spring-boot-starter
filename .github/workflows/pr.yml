@@ -1,0 +1,33 @@
+name: Verify Pull Request
+
+env:
+  MAVEN_ARGS: -V -ntp -e
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ 11, 17 ]
+        distribution: [ temurin ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Java and Maven
+        uses: actions/setup-java@v2
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+      - name: Check code format
+        run: |
+          ./mvnw ${MAVEN_ARGS} formatter:validate -Dconfigfile=$PWD/contributing/eclipse-google-style.xml --file pom.xml
+          ./mvnw ${MAVEN_ARGS} impsort:check --file pom.xml
+      - name: Run unit tests
+        run: ./mvnw ${MAVEN_ARGS} -B test --file pom.xml

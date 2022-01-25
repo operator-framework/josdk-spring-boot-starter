@@ -1,13 +1,7 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.List;
 
-import io.fabric8.kubernetes.client.KubernetesClient;
-import io.javaoperatorsdk.operator.Operator;
-import io.javaoperatorsdk.operator.ReconcilerUtils;
-import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,19 +9,30 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.List;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.javaoperatorsdk.operator.Operator;
+import io.javaoperatorsdk.operator.ReconcilerUtils;
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class AutoConfigurationTest {
 
-  @Autowired private OperatorConfigurationProperties config;
+  @Autowired
+  private OperatorConfigurationProperties config;
 
-  @MockBean private Operator operator;
+  @MockBean
+  private Operator operator;
 
-  @Autowired private KubernetesClient kubernetesClient;
+  @Autowired
+  private KubernetesClient kubernetesClient;
 
-  @Autowired private List<Reconciler<?>> reconcilers;
+  @Autowired
+  private List<Reconciler<?>> reconcilers;
 
   @Test
   public void loadsKubernetesClientPropertiesProperly() {

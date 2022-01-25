@@ -1,9 +1,11 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
-import io.javaoperatorsdk.operator.api.config.ConfigurationService;
 import java.util.Collections;
 import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import io.javaoperatorsdk.operator.api.config.ConfigurationService;
 
 @ConfigurationProperties(prefix = "javaoperatorsdk")
 public class OperatorConfigurationProperties {
@@ -12,7 +14,7 @@ public class OperatorConfigurationProperties {
   private Map<String, ReconcilerProperties> reconcilers = Collections.emptyMap();
   private boolean checkCrdAndValidateLocalModel = true;
   private int concurrentReconciliationThreads =
-    ConfigurationService.DEFAULT_RECONCILIATION_THREADS_NUMBER;
+      ConfigurationService.DEFAULT_RECONCILIATION_THREADS_NUMBER;
 
   public KubernetesClientProperties getClient() {
     return client;

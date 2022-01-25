@@ -1,8 +1,9 @@
 package io.javaoperatorsdk.operator.sample;
 
+import org.springframework.stereotype.Component;
+
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.Operator;
-import org.springframework.stereotype.Component;
 
 /** This component just showcases what beans are registered. */
 @Component
