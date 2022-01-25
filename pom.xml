@@ -8,6 +8,7 @@
     <artifactId>operator-framework-spring-boot-starter-parent</artifactId>
     <version>2.0.1-SNAPSHOT</version>
     <name>Java Operator SDK Spring Boot Starter - Parent</name>
+    <description>Spring Boot Starter for Java Operator SDK</description>
     <packaging>pom</packaging>
     <url>https://github.com/java-operator-sdk/operator-framework-spring-boot-starter</url>
 
@@ -17,6 +18,12 @@
             <url>https://www.apache.org/licenses/LICENSE-2.0.html</url>
         </license>
     </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/java-operator-sdk/operator-framework-spring-boot-starter.git</connection>
+        <developerConnection>scm:git:git@github.com/java-operator-sdk/operator-framework-spring-boot-starter.git</developerConnection>
+        <url>https://github.com/java-operator-sdk/operator-framework-spring-boot-starter.git/tree/master</url>
+    </scm>
 
     <developers>
         <developer>
