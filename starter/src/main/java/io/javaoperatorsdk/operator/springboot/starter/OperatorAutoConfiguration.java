@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -29,6 +31,9 @@ import io.javaoperatorsdk.operator.config.runtime.AnnotationConfiguration;
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
 public class OperatorAutoConfiguration extends AbstractConfigurationService {
+
+  private final static Logger log = LoggerFactory.getLogger(OperatorAutoConfiguration.class);
+
   @Autowired
   private OperatorConfigurationProperties configuration;
 
@@ -82,7 +87,11 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
 
     reconcilers.forEach(r -> operator.register(processReconciler(r, resourceClassResolver)));
 
-    operator.start();
+    if (!reconcilers.isEmpty()) {
+      operator.start();
+    } else {
+      log.warn("No Reconcilers found in the application context: Not starting the Operator");
+    }
 
     return operator;
   }
