@@ -3,6 +3,7 @@ package io.javaoperatorsdk.operator.springboot.starter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import io.javaoperatorsdk.operator.ReconcilerUtils;
 import io.javaoperatorsdk.operator.api.config.AbstractConfigurationService;
 import io.javaoperatorsdk.operator.api.config.RetryConfiguration;
 import io.javaoperatorsdk.operator.api.config.Utils;
+import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.config.runtime.AnnotationConfiguration;
 
@@ -96,6 +98,18 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
     return operator;
   }
 
+  @Bean
+  @ConditionalOnMissingBean(name = "reconciliationExecutorService")
+  public ExecutorService reconciliationExecutorService() {
+    return super.getExecutorService();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(Metrics.class)
+  public Metrics metrics() {
+    return super.getMetrics();
+  }
+
   private Reconciler<?> processReconciler(
       Reconciler<?> reconciler, ResourceClassResolver resourceClassResolver) {
     final var reconcilerPropertiesMap = configuration.getReconcilers();
@@ -160,6 +174,16 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
           .map(RetryProperties::asRetryConfiguration)
           .orElse(RetryConfiguration.DEFAULT);
     }
+  }
+
+  @Override
+  public Metrics getMetrics() {
+    return metrics();
+  }
+
+  @Override
+  public ExecutorService getExecutorService() {
+    return reconciliationExecutorService();
   }
 
   @Override
