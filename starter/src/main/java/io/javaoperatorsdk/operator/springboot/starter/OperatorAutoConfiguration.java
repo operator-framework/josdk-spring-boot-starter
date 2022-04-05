@@ -39,6 +39,9 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
   @Autowired
   private OperatorConfigurationProperties configuration;
 
+  @Autowired(required = false)
+  private KubernetesConfigCustomizer configCustomizer;
+
   public OperatorAutoConfiguration() {
     super(Utils.loadFromProperties());
   }
@@ -59,13 +62,22 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
 
   @Override
   public Config getClientConfiguration() {
-    final var clientCfg = configuration.getClient();
-    ConfigBuilder config = new ConfigBuilder();
-    config.withTrustCerts(clientCfg.isTrustSelfSignedCertificates());
-    clientCfg.getMasterUrl().ifPresent(config::withMasterUrl);
-    clientCfg.getUsername().ifPresent(config::withUsername);
-    clientCfg.getPassword().ifPresent(config::withPassword);
-    return config.build();
+    return configuration.getClient().getContext()
+        .map(Config::autoConfigure)
+        .orElseGet(() -> {
+          final var clientCfg = configuration.getClient();
+          ConfigBuilder config = new ConfigBuilder();
+          config.withTrustCerts(clientCfg.isTrustSelfSignedCertificates());
+          clientCfg.getMasterUrl().ifPresent(config::withMasterUrl);
+          clientCfg.getUsername().ifPresent(config::withUsername);
+          clientCfg.getPassword().ifPresent(config::withPassword);
+
+          if (configCustomizer != null) {
+            configCustomizer.customize(config);
+          }
+
+          return config.build();
+        });
   }
 
   @Override

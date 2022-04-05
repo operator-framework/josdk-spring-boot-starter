@@ -5,6 +5,7 @@ import java.util.Optional;
 public class KubernetesClientProperties {
 
   private boolean openshift = false;
+  private String context;
   private String username;
   private String password;
   private String masterUrl;
@@ -17,6 +18,14 @@ public class KubernetesClientProperties {
   public KubernetesClientProperties setOpenshift(boolean openshift) {
     this.openshift = openshift;
     return this;
+  }
+
+  public Optional<String> getContext() {
+    return Optional.ofNullable(context);
+  }
+
+  public void setContext(String context) {
+    this.context = context;
   }
 
   public Optional<String> getUsername() {
