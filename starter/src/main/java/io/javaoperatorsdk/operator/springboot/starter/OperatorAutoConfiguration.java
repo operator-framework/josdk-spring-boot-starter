@@ -64,6 +64,15 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
   public Config getClientConfiguration() {
     return configuration.getClient().getContext()
         .map(Config::autoConfigure)
+        .map(it -> {
+          if (configCustomizer != null) {
+            final var builder = new ConfigBuilder(it);
+            configCustomizer.customize(builder);
+            return builder.build();
+          } else {
+            return it;
+          }
+        })
         .orElseGet(() -> {
           final var clientCfg = configuration.getClient();
           ConfigBuilder config = new ConfigBuilder();
