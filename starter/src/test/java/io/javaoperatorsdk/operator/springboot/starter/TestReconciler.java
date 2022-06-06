@@ -7,7 +7,7 @@ import io.javaoperatorsdk.operator.springboot.starter.model.TestResource;
 
 @Component
 @ControllerConfiguration
-public class TestReconciler implements Reconciler<TestResource> {
+public class TestReconciler implements Reconciler<TestResource>, Cleaner<TestResource> {
 
   @Override
   public UpdateControl<TestResource> reconcile(TestResource testResource, Context context) {
@@ -16,6 +16,6 @@ public class TestReconciler implements Reconciler<TestResource> {
 
   @Override
   public DeleteControl cleanup(TestResource resource, Context context) {
-    return Reconciler.super.cleanup(resource, context);
+    return DeleteControl.defaultDelete();
   }
 }

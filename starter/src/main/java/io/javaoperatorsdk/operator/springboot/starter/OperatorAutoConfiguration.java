@@ -24,11 +24,11 @@ import io.fabric8.openshift.client.OpenShiftConfig;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.ReconcilerUtils;
 import io.javaoperatorsdk.operator.api.config.AbstractConfigurationService;
+import io.javaoperatorsdk.operator.api.config.AnnotationControllerConfiguration;
 import io.javaoperatorsdk.operator.api.config.RetryConfiguration;
 import io.javaoperatorsdk.operator.api.config.Utils;
 import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
-import io.javaoperatorsdk.operator.config.runtime.AnnotationConfiguration;
 
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
@@ -141,7 +141,7 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
   }
 
   private static class ConfigurationWrapper<R extends CustomResource<?, ?>>
-      extends AnnotationConfiguration<R> {
+      extends AnnotationControllerConfiguration<R> {
     private final Optional<ReconcilerProperties> properties;
     private final Reconciler<R> reconciler;
     private final ResourceClassResolver resourceClassResolver;
@@ -162,8 +162,9 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
     }
 
     @Override
-    public String getFinalizer() {
-      return properties.map(ReconcilerProperties::getFinalizer).orElse(super.getFinalizer());
+    public String getFinalizerName() {
+      return properties.map(ReconcilerProperties::getFinalizerName)
+          .orElse(super.getFinalizerName());
     }
 
     @Override
