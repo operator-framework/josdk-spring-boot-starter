@@ -4,7 +4,7 @@ import java.util.Set;
 
 public class ReconcilerProperties {
   private String name;
-  private String finalizer;
+  private String finalizerName;
   private boolean generationAware;
   private boolean clusterScoped;
   private Set<String> namespaces;
@@ -18,12 +18,12 @@ public class ReconcilerProperties {
     this.name = name;
   }
 
-  public String getFinalizer() {
-    return finalizer;
+  public String getFinalizerName() {
+    return finalizerName;
   }
 
-  public void setFinalizer(String finalizer) {
-    this.finalizer = finalizer;
+  public void setFinalizerName(String finalizerName) {
+    this.finalizerName = finalizerName;
   }
 
   public boolean isGenerationAware() {
