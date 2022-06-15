@@ -8,6 +8,7 @@ public class KubernetesClientProperties {
   private String context;
   private String username;
   private String password;
+  private String oauthToken;
   private String masterUrl;
   private boolean trustSelfSignedCertificates = false;
 
@@ -43,6 +44,15 @@ public class KubernetesClientProperties {
 
   public KubernetesClientProperties setPassword(String password) {
     this.password = password;
+    return this;
+  }
+
+  public Optional<String> getOauthToken() {
+    return Optional.ofNullable(oauthToken);
+  }
+
+  public KubernetesClientProperties setOauthToken(String oauthToken) {
+    this.oauthToken = oauthToken;
     return this;
   }
 

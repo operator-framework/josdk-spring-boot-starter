@@ -39,6 +39,7 @@ public class AutoConfigurationTest {
     final var operatorProperties = config.getClient();
     assertEquals("user", operatorProperties.getUsername().get());
     assertEquals("password", operatorProperties.getPassword().get());
+    assertEquals("token", operatorProperties.getOauthToken().get());
     assertEquals("http://master.url", operatorProperties.getMasterUrl().get());
   }
 
