@@ -1,0 +1,13 @@
+javaoperatorsdk:
+  reconcilers:
+    customservicereconciler:
+      namespaces:
+        - test-ns
+      retry:
+        maxAttempts: 3
+  test:
+    global-crd-paths: classpath:global-crd.yml
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
