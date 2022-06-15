@@ -2,6 +2,7 @@ javaoperatorsdk:
   client:
     username: user
     password: password
+    oauthToken: token
     masterUrl: http://master.url
 
   reconcilers:
