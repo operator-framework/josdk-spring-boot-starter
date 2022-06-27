@@ -12,11 +12,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.ReconcilerUtils;
+import io.javaoperatorsdk.operator.api.config.Cloner;
+import io.javaoperatorsdk.operator.api.config.ConfigurationService;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -33,6 +33,12 @@ public class AutoConfigurationTest {
 
   @Autowired
   private List<Reconciler<?>> reconcilers;
+
+  @Autowired
+  private ConfigurationService configurationService;
+
+  @MockBean
+  private Cloner cloner;
 
   @Test
   public void loadsKubernetesClientPropertiesProperly() {
@@ -56,6 +62,13 @@ public class AutoConfigurationTest {
   @Test
   public void beansCreated() {
     assertNotNull(kubernetesClient);
+    assertNotNull(configurationService);
+  }
+
+  @Test
+  public void clonerIsOverridden() {
+    assertInstanceOf(OperatorAutoConfiguration.class, configurationService);
+    assertEquals(configurationService.getResourceCloner(), cloner);
   }
 
   @Test
@@ -63,4 +76,5 @@ public class AutoConfigurationTest {
     assertEquals(1, reconcilers.size());
     assertTrue(reconcilers.get(0) instanceof TestReconciler);
   }
+
 }
