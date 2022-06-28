@@ -23,10 +23,7 @@ import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftConfig;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.ReconcilerUtils;
-import io.javaoperatorsdk.operator.api.config.AbstractConfigurationService;
-import io.javaoperatorsdk.operator.api.config.AnnotationControllerConfiguration;
-import io.javaoperatorsdk.operator.api.config.RetryConfiguration;
-import io.javaoperatorsdk.operator.api.config.Utils;
+import io.javaoperatorsdk.operator.api.config.*;
 import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 
@@ -38,6 +35,9 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
 
   @Autowired
   private OperatorConfigurationProperties configuration;
+
+  @Autowired(required = false)
+  private Cloner cloner;
 
   @Autowired(required = false)
   private KubernetesConfigCustomizer configCustomizer;
@@ -211,5 +211,10 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
   @Override
   public int concurrentReconciliationThreads() {
     return configuration.getConcurrentReconciliationThreads();
+  }
+
+  @Override
+  public Cloner getResourceCloner() {
+    return cloner != null ? cloner : super.getResourceCloner();
   }
 }
