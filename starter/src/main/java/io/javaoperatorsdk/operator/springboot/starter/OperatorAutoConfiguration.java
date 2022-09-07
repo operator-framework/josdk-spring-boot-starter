@@ -13,19 +13,16 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.ConfigBuilder;
-import io.fabric8.kubernetes.client.CustomResource;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.*;
 import io.fabric8.kubernetes.client.http.HttpClient;
-import io.fabric8.openshift.client.DefaultOpenShiftClient;
-import io.fabric8.openshift.client.OpenShiftConfig;
+import io.fabric8.openshift.client.OpenShiftClient;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.ReconcilerUtils;
 import io.javaoperatorsdk.operator.api.config.*;
 import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
+import io.javaoperatorsdk.operator.processing.retry.Retry;
 
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
@@ -52,12 +49,17 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
     final var config = getClientConfiguration();
     return configuration.getClient().isOpenshift()
         ? httpClientFactory
-            .map(it -> new DefaultOpenShiftClient(it.createHttpClient(config),
-                new OpenShiftConfig(config)))
-            .orElseGet(() -> new DefaultOpenShiftClient(config))
+            .map(it -> new KubernetesClientBuilder().withHttpClientFactory(it).withConfig(config)
+                .build().adapt(OpenShiftClient.class))
+            // new DefaultOpenShiftClient(it.createHttpClient(config),
+            // new OpenShiftConfig(config)))
+            .orElseGet(() -> new KubernetesClientBuilder().withConfig(config)
+                .build().adapt(OpenShiftClient.class))
         : httpClientFactory
-            .map(it -> new DefaultKubernetesClient(it.createHttpClient(config), config))
-            .orElseGet(() -> new DefaultKubernetesClient(config));
+            .map(it -> new KubernetesClientBuilder().withHttpClientFactory(it).withConfig(config)
+                .build())
+            .orElseGet(() -> new KubernetesClientBuilder().withConfig(config)
+                .build());
   }
 
   @Override
@@ -190,11 +192,24 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
     }
 
     @Override
-    public RetryConfiguration getRetryConfiguration() {
-      return properties
-          .map(ReconcilerProperties::getRetry)
-          .map(RetryProperties::asRetryConfiguration)
-          .orElse(RetryConfiguration.DEFAULT);
+    public Retry getRetry() {
+      return properties.map(props -> {
+        var retryProperties = props.getRetry();
+        var retry = new GenericRetry();
+        if (retryProperties.getInitialInterval() != null) {
+          retry.setInitialInterval(retryProperties.getInitialInterval());
+        }
+        if (retryProperties.getMaxAttempts() != null) {
+          retry.setMaxAttempts(retryProperties.getMaxAttempts());
+        }
+        if (retryProperties.getMaxInterval() != null) {
+          retry.setMaxInterval(retryProperties.getMaxInterval());
+        }
+        if (retryProperties.getIntervalMultiplier() != null) {
+          retry.setIntervalMultiplier(retryProperties.getIntervalMultiplier());
+        }
+        return retry;
+      }).orElse(new GenericRetry());
     }
   }
 

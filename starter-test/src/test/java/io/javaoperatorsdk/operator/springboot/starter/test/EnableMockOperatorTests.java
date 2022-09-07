@@ -19,11 +19,11 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
-import io.javaoperatorsdk.operator.sample.CustomService;
-import io.javaoperatorsdk.operator.sample.CustomServiceReconciler;
-import io.javaoperatorsdk.operator.sample.ServiceSpec;
 import io.javaoperatorsdk.operator.springboot.starter.OperatorConfigurationProperties;
 import io.javaoperatorsdk.operator.springboot.starter.ReconcilerProperties;
+import io.javaoperatorsdk.operator.springboot.starter.sample.CustomService;
+import io.javaoperatorsdk.operator.springboot.starter.sample.CustomServiceReconciler;
+import io.javaoperatorsdk.operator.springboot.starter.sample.ServiceSpec;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -72,11 +72,12 @@ class EnableMockOperatorTests {
     String testNS = "test-ns";
     assertTrue(properties.getNamespaces().contains(testNS));
     // create a namespace for testing
-    client.namespaces().create(namespace(testNS));
+    client.namespaces().resource(namespace(testNS)).create();
     assertNotNull(client.namespaces().withName(testNS).get());
     // create a CR
     client.resources(CustomService.class).inNamespace(testNS)
-        .create(customService("test-name", "test-label"));
+        .resource(customService("test-name", "test-label"))
+        .create();
     assertNotNull(client.resources(CustomService.class).inNamespace(testNS)
         .withName("test-name").get());
     // test if a service was created by the CustomServiceReconciler

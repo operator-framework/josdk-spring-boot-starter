@@ -27,13 +27,13 @@
   <dependencies>
     <dependency>
       <groupId>io.javaoperatorsdk</groupId>
-      <artifactId>operator-framework-smoke-test-samples-common</artifactId>
+      <artifactId>operator-framework-spring-boot-starter</artifactId>
     </dependency>
     <dependency>
       <groupId>io.javaoperatorsdk</groupId>
-      <artifactId>operator-framework-spring-boot-starter</artifactId>
+      <artifactId>operator-framework-spring-boot-starter-samples-common</artifactId>
+      <version>${project.version}</version>
     </dependency>
-    
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>

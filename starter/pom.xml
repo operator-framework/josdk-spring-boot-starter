@@ -80,8 +80,18 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.fabric8</groupId>
+      <artifactId>openshift-client</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.javaoperatorsdk</groupId>
       <artifactId>operator-framework</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>io.fabric8</groupId>
+          <artifactId>kubernetes-client</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
