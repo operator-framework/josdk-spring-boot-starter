@@ -18,5 +18,6 @@
 
   <modules>
     <module>spring-boot-auto-config</module>
+    <module>common</module>
   </modules>
 </project>
