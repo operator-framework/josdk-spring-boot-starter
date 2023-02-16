@@ -26,7 +26,7 @@ import io.javaoperatorsdk.operator.processing.retry.Retry;
 
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
-public class OperatorAutoConfiguration extends AbstractConfigurationService {
+public class OperatorAutoConfiguration extends BaseConfigurationService {
 
   private final static Logger log = LoggerFactory.getLogger(OperatorAutoConfiguration.class);
 
@@ -110,7 +110,8 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
       ResourceClassResolver resourceClassResolver) {
     Operator operator = new Operator(kubernetesClient, this);
 
-    reconcilers.forEach(r -> operator.register(processReconciler(r, resourceClassResolver)));
+    reconcilers.forEach(r -> operator.register(r,
+        o -> setControllerOverrides(o, configuration, resourceClassResolver, r)));
 
     if (!reconcilers.isEmpty()) {
       operator.start();
@@ -120,6 +121,44 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
 
     return operator;
   }
+
+  private void setControllerOverrides(ControllerConfigurationOverrider<?> o,
+      OperatorConfigurationProperties configuration,
+      ResourceClassResolver resourceClassResolver, Reconciler<?> reconciler) {
+    final var reconcilerPropertiesMap = configuration.getReconcilers();
+    final var name = ReconcilerUtils.getNameFor(reconciler);
+    var props = reconcilerPropertiesMap.get(name);
+
+    if (props != null) {
+      Optional.ofNullable(props.getFinalizerName()).ifPresent(o::withFinalizer);
+      // Optional.ofNullable(props.getName()).ifPresent(o::withName);
+      Optional.ofNullable(props.getNamespaces()).ifPresent(o::settingNamespaces);
+      Optional.ofNullable(props.getRetry()).ifPresent(r -> {
+        var retry = new GenericRetry();
+        if (r.getInitialInterval() != null) {
+          retry.setInitialInterval(r.getInitialInterval());
+        }
+        if (r.getMaxAttempts() != null) {
+          retry.setMaxAttempts(r.getMaxAttempts());
+        }
+        if (r.getMaxInterval() != null) {
+          retry.setMaxInterval(r.getMaxInterval());
+        }
+        if (r.getIntervalMultiplier() != null) {
+          retry.setIntervalMultiplier(r.getIntervalMultiplier());
+        }
+        o.withRetry(retry);
+      });
+      Optional.ofNullable(props.isGenerationAware()).ifPresent(o::withGenerationAware);
+      Optional.ofNullable(props.isClusterScoped()).ifPresent(clusterScoped -> {
+        if (clusterScoped) {
+          o.watchingAllNamespaces();
+        }
+      });
+    }
+  }
+
+
 
   @Bean
   @ConditionalOnMissingBean(name = "reconciliationExecutorService")
@@ -134,28 +173,34 @@ public class OperatorAutoConfiguration extends AbstractConfigurationService {
   }
 
   private Reconciler<?> processReconciler(
-      Reconciler<?> reconciler, ResourceClassResolver resourceClassResolver) {
+      Reconciler<?> reconciler, ResourceClassResolver resourceClassResolver,
+      BaseConfigurationService baseConfigurationService) {
     final var reconcilerPropertiesMap = configuration.getReconcilers();
     final var name = ReconcilerUtils.getNameFor(reconciler);
     var controllerProps = reconcilerPropertiesMap.get(name);
-    register(new ConfigurationWrapper(reconciler, controllerProps, resourceClassResolver));
+    ControllerConfiguration<?> controllerConfiguration =
+        baseConfigurationService.getConfigurationFor(reconciler);
+
+    register(new ConfigurationWrapper(reconciler, controllerConfiguration, controllerProps,
+        resourceClassResolver));
     return reconciler;
   }
 
   private static class ConfigurationWrapper<R extends CustomResource<?, ?>>
-      extends AnnotationControllerConfiguration<R> {
+      extends ResolvedControllerConfiguration {
     private final Optional<ReconcilerProperties> properties;
     private final Reconciler<R> reconciler;
     private final ResourceClassResolver resourceClassResolver;
 
     private ConfigurationWrapper(
         Reconciler<R> reconciler,
+        ControllerConfiguration<?> controllerConfiguration,
         ReconcilerProperties properties,
         ResourceClassResolver resourceClassResolver) {
-      super(reconciler);
-      this.reconciler = reconciler;
+      super(resourceClassResolver.resolveCustomResourceClass(reconciler), controllerConfiguration);
       this.properties = Optional.ofNullable(properties);
       this.resourceClassResolver = resourceClassResolver;
+      this.reconciler = reconciler;
     }
 
     @Override
