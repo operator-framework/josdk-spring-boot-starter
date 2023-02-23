@@ -1,10 +1,20 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-
+import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.ConfigBuilder;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import io.fabric8.kubernetes.client.http.HttpClient;
+import io.fabric8.openshift.client.OpenShiftClient;
+import io.javaoperatorsdk.operator.Operator;
+import io.javaoperatorsdk.operator.ReconcilerUtils;
+import io.javaoperatorsdk.operator.api.config.BaseConfigurationService;
+import io.javaoperatorsdk.operator.api.config.Cloner;
+import io.javaoperatorsdk.operator.api.config.ControllerConfigurationOverrider;
+import io.javaoperatorsdk.operator.api.config.Utils;
+import io.javaoperatorsdk.operator.api.monitoring.Metrics;
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,16 +23,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.fabric8.kubernetes.client.*;
-import io.fabric8.kubernetes.client.http.HttpClient;
-import io.fabric8.openshift.client.OpenShiftClient;
-import io.javaoperatorsdk.operator.Operator;
-import io.javaoperatorsdk.operator.ReconcilerUtils;
-import io.javaoperatorsdk.operator.api.config.*;
-import io.javaoperatorsdk.operator.api.monitoring.Metrics;
-import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
-import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
-import io.javaoperatorsdk.operator.processing.retry.Retry;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
@@ -122,6 +125,7 @@ public class OperatorAutoConfiguration extends BaseConfigurationService {
     return operator;
   }
 
+  @SuppressWarnings("rawtypes")
   private void setControllerOverrides(ControllerConfigurationOverrider<?> o,
       OperatorConfigurationProperties configuration,
       ResourceClassResolver resourceClassResolver, Reconciler<?> reconciler) {
@@ -131,7 +135,7 @@ public class OperatorAutoConfiguration extends BaseConfigurationService {
 
     if (props != null) {
       Optional.ofNullable(props.getFinalizerName()).ifPresent(o::withFinalizer);
-      // Optional.ofNullable(props.getName()).ifPresent(o::withName);
+      Optional.ofNullable(props.getName()).ifPresent(o::withName);
       Optional.ofNullable(props.getNamespaces()).ifPresent(o::settingNamespaces);
       Optional.ofNullable(props.getRetry()).ifPresent(r -> {
         var retry = new GenericRetry();
@@ -155,10 +159,10 @@ public class OperatorAutoConfiguration extends BaseConfigurationService {
           o.watchingAllNamespaces();
         }
       });
+      Class resourceClass = resourceClassResolver.resolveCustomResourceClass(reconciler);
+      o.withResourceClass(resourceClass);
     }
   }
-
-
 
   @Bean
   @ConditionalOnMissingBean(name = "reconciliationExecutorService")
@@ -170,92 +174,6 @@ public class OperatorAutoConfiguration extends BaseConfigurationService {
   @ConditionalOnMissingBean(Metrics.class)
   public Metrics metrics() {
     return super.getMetrics();
-  }
-
-  private Reconciler<?> processReconciler(
-      Reconciler<?> reconciler, ResourceClassResolver resourceClassResolver,
-      BaseConfigurationService baseConfigurationService) {
-    final var reconcilerPropertiesMap = configuration.getReconcilers();
-    final var name = ReconcilerUtils.getNameFor(reconciler);
-    var controllerProps = reconcilerPropertiesMap.get(name);
-    ControllerConfiguration<?> controllerConfiguration =
-        baseConfigurationService.getConfigurationFor(reconciler);
-
-    register(new ConfigurationWrapper(reconciler, controllerConfiguration, controllerProps,
-        resourceClassResolver));
-    return reconciler;
-  }
-
-  private static class ConfigurationWrapper<R extends CustomResource<?, ?>>
-      extends ResolvedControllerConfiguration {
-    private final Optional<ReconcilerProperties> properties;
-    private final Reconciler<R> reconciler;
-    private final ResourceClassResolver resourceClassResolver;
-
-    private ConfigurationWrapper(
-        Reconciler<R> reconciler,
-        ControllerConfiguration<?> controllerConfiguration,
-        ReconcilerProperties properties,
-        ResourceClassResolver resourceClassResolver) {
-      super(resourceClassResolver.resolveCustomResourceClass(reconciler), controllerConfiguration);
-      this.properties = Optional.ofNullable(properties);
-      this.resourceClassResolver = resourceClassResolver;
-      this.reconciler = reconciler;
-    }
-
-    @Override
-    public String getName() {
-      return super.getName();
-    }
-
-    @Override
-    public String getFinalizerName() {
-      return properties.map(ReconcilerProperties::getFinalizerName)
-          .orElse(super.getFinalizerName());
-    }
-
-    @Override
-    public boolean isGenerationAware() {
-      return properties
-          .map(ReconcilerProperties::isGenerationAware)
-          .orElse(super.isGenerationAware());
-    }
-
-    @Override
-    public Class<R> getResourceClass() {
-      return resourceClassResolver.resolveCustomResourceClass(reconciler);
-    }
-
-    @Override
-    public Set<String> getNamespaces() {
-      return properties.map(ReconcilerProperties::getNamespaces).orElse(super.getNamespaces());
-    }
-
-    @Override
-    public boolean watchAllNamespaces() {
-      return super.watchAllNamespaces();
-    }
-
-    @Override
-    public Retry getRetry() {
-      return properties.map(props -> {
-        var retryProperties = props.getRetry();
-        var retry = new GenericRetry();
-        if (retryProperties.getInitialInterval() != null) {
-          retry.setInitialInterval(retryProperties.getInitialInterval());
-        }
-        if (retryProperties.getMaxAttempts() != null) {
-          retry.setMaxAttempts(retryProperties.getMaxAttempts());
-        }
-        if (retryProperties.getMaxInterval() != null) {
-          retry.setMaxInterval(retryProperties.getMaxInterval());
-        }
-        if (retryProperties.getIntervalMultiplier() != null) {
-          retry.setIntervalMultiplier(retryProperties.getIntervalMultiplier());
-        }
-        return retry;
-      }).orElse(new GenericRetry());
-    }
   }
 
   @Override
