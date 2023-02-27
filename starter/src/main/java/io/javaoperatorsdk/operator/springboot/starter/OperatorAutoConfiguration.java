@@ -180,35 +180,4 @@ public class OperatorAutoConfiguration {
           return config.build();
         });
   }
-  //
-  // @Override
-  // public boolean checkCRDAndValidateLocalModel() {
-  // return configuration.getCheckCrdAndValidateLocalModel();
-  // }
-
-  // @Override
-  // public Metrics getMetrics() {
-  // return metrics();
-  // }
-  //
-  // @Override
-  // public ExecutorService getExecutorService() {
-  // return reconciliationExecutorService();
-  // }
-  //
-  // @Override
-  // public int concurrentReconciliationThreads() {
-  // return configuration.getConcurrentReconciliationThreads();
-  // }
-  //
-  // @Override
-  // public Cloner getResourceCloner() {
-  // return cloner != null ? cloner : super.getResourceCloner();
-  // }
-  //
-  // @Override
-  // public ResourceClassResolver getResourceClassResolver() {
-  // return resourceClassResolver != null ? resourceClassResolver :
-  // super.getResourceClassResolver();
-  // }
 }
