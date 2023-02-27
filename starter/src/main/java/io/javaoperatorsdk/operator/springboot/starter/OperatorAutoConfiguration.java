@@ -1,20 +1,10 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
-import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.ConfigBuilder;
-import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.fabric8.kubernetes.client.http.HttpClient;
-import io.fabric8.openshift.client.OpenShiftClient;
-import io.javaoperatorsdk.operator.Operator;
-import io.javaoperatorsdk.operator.ReconcilerUtils;
-import io.javaoperatorsdk.operator.api.config.BaseConfigurationService;
-import io.javaoperatorsdk.operator.api.config.Cloner;
-import io.javaoperatorsdk.operator.api.config.ControllerConfigurationOverrider;
-import io.javaoperatorsdk.operator.api.config.Utils;
-import io.javaoperatorsdk.operator.api.monitoring.Metrics;
-import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
-import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +13,22 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
+import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.ConfigBuilder;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import io.fabric8.kubernetes.client.http.HttpClient;
+import io.fabric8.openshift.client.OpenShiftClient;
+import io.javaoperatorsdk.operator.Operator;
+import io.javaoperatorsdk.operator.ReconcilerUtils;
+import io.javaoperatorsdk.operator.api.config.*;
+import io.javaoperatorsdk.operator.api.monitoring.Metrics;
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
 
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
-public class OperatorAutoConfiguration extends BaseConfigurationService {
+public class OperatorAutoConfiguration {
 
   private final static Logger log = LoggerFactory.getLogger(OperatorAutoConfiguration.class);
 
@@ -42,14 +41,10 @@ public class OperatorAutoConfiguration extends BaseConfigurationService {
   @Autowired(required = false)
   private KubernetesConfigCustomizer configCustomizer;
 
-  public OperatorAutoConfiguration() {
-    super(Utils.loadFromProperties());
-  }
-
   @Bean
   @ConditionalOnMissingBean
-  public KubernetesClient kubernetesClient(Optional<HttpClient.Factory> httpClientFactory) {
-    final var config = getClientConfiguration();
+  public KubernetesClient kubernetesClient(Optional<HttpClient.Factory> httpClientFactory,
+      Config config) {
     return configuration.getClient().isOpenshift()
         ? httpClientFactory
             .map(it -> new KubernetesClientBuilder().withHttpClientFactory(it).withConfig(config)
@@ -65,70 +60,53 @@ public class OperatorAutoConfiguration extends BaseConfigurationService {
                 .build());
   }
 
-  @Override
-  public Config getClientConfiguration() {
-    return configuration.getClient().getContext()
-        .map(Config::autoConfigure)
-        .map(it -> {
-          if (configCustomizer != null) {
-            final var builder = new ConfigBuilder(it);
-            configCustomizer.customize(builder);
-            return builder.build();
-          } else {
-            return it;
-          }
-        })
-        .orElseGet(() -> {
-          final var clientCfg = configuration.getClient();
-          ConfigBuilder config = new ConfigBuilder();
-          config.withTrustCerts(clientCfg.isTrustSelfSignedCertificates());
-          clientCfg.getMasterUrl().ifPresent(config::withMasterUrl);
-          clientCfg.getUsername().ifPresent(config::withUsername);
-          clientCfg.getPassword().ifPresent(config::withPassword);
 
-          if (configCustomizer != null) {
-            configCustomizer.customize(config);
-          }
-
-          return config.build();
-        });
-  }
-
-  @Override
-  public boolean checkCRDAndValidateLocalModel() {
-    return configuration.getCheckCrdAndValidateLocalModel();
-  }
 
   @Bean
   @ConditionalOnMissingBean(ResourceClassResolver.class)
   public ResourceClassResolver resourceClassResolver() {
-    return new NaiveResourceClassResolver();
+    return new DefaultResourceClassResolver();
   }
 
   @Bean(destroyMethod = "stop")
   @ConditionalOnMissingBean(Operator.class)
   public Operator operator(
+      ConfigurationService configurationService,
       KubernetesClient kubernetesClient,
-      List<Reconciler<?>> reconcilers,
-      ResourceClassResolver resourceClassResolver) {
-    Operator operator = new Operator(kubernetesClient, this);
+      List<Reconciler<?>> reconcilers) {
 
+    Operator operator = new Operator(kubernetesClient, configurationService);
     reconcilers.forEach(r -> operator.register(r,
-        o -> setControllerOverrides(o, configuration, resourceClassResolver, r)));
+        o -> setControllerOverrides(o, configuration, r)));
 
     if (!reconcilers.isEmpty()) {
       operator.start();
     } else {
       log.warn("No Reconcilers found in the application context: Not starting the Operator");
     }
-
     return operator;
   }
+
+  @Bean
+  public ConfigurationService configurationService(ResourceClassResolver resourceClassResolver,
+      Metrics metrics) {
+    OverridableBaseConfigService conf =
+        new OverridableBaseConfigService(Utils.loadFromProperties());
+    if (cloner != null) {
+      conf.setResourceCloner(cloner);
+    }
+    conf.setConcurrentReconciliationThreads(configuration.getConcurrentReconciliationThreads());
+    conf.setMetrics(metrics);
+    conf.setResourceClassResolver(resourceClassResolver);
+    conf.setCheckCRDAndValidateLocalModel(configuration.getCheckCrdAndValidateLocalModel());
+    return conf;
+  }
+
 
   @SuppressWarnings("rawtypes")
   private void setControllerOverrides(ControllerConfigurationOverrider<?> o,
       OperatorConfigurationProperties configuration,
-      ResourceClassResolver resourceClassResolver, Reconciler<?> reconciler) {
+      Reconciler<?> reconciler) {
     final var reconcilerPropertiesMap = configuration.getReconcilers();
     final var name = ReconcilerUtils.getNameFor(reconciler);
     var props = reconcilerPropertiesMap.get(name);
@@ -159,40 +137,78 @@ public class OperatorAutoConfiguration extends BaseConfigurationService {
           o.watchingAllNamespaces();
         }
       });
-      Class resourceClass = resourceClassResolver.resolveCustomResourceClass(reconciler);
-      o.withResourceClass(resourceClass);
     }
   }
 
   @Bean
   @ConditionalOnMissingBean(name = "reconciliationExecutorService")
   public ExecutorService reconciliationExecutorService() {
-    return super.getExecutorService();
+    return Executors.newFixedThreadPool(configuration.getConcurrentReconciliationThreads());
   }
 
   @Bean
   @ConditionalOnMissingBean(Metrics.class)
   public Metrics metrics() {
-    return super.getMetrics();
+    return Metrics.NOOP;
   }
 
-  @Override
-  public Metrics getMetrics() {
-    return metrics();
-  }
+  @Bean
+  public Config getClientConfiguration() {
+    return configuration.getClient().getContext()
+        .map(Config::autoConfigure)
+        .map(it -> {
+          if (configCustomizer != null) {
+            final var builder = new ConfigBuilder(it);
+            configCustomizer.customize(builder);
+            return builder.build();
+          } else {
+            return it;
+          }
+        })
+        .orElseGet(() -> {
+          final var clientCfg = configuration.getClient();
+          ConfigBuilder config = new ConfigBuilder();
+          config.withTrustCerts(clientCfg.isTrustSelfSignedCertificates());
+          clientCfg.getMasterUrl().ifPresent(config::withMasterUrl);
+          clientCfg.getUsername().ifPresent(config::withUsername);
+          clientCfg.getPassword().ifPresent(config::withPassword);
 
-  @Override
-  public ExecutorService getExecutorService() {
-    return reconciliationExecutorService();
-  }
+          if (configCustomizer != null) {
+            configCustomizer.customize(config);
+          }
 
-  @Override
-  public int concurrentReconciliationThreads() {
-    return configuration.getConcurrentReconciliationThreads();
+          return config.build();
+        });
   }
+  //
+  // @Override
+  // public boolean checkCRDAndValidateLocalModel() {
+  // return configuration.getCheckCrdAndValidateLocalModel();
+  // }
 
-  @Override
-  public Cloner getResourceCloner() {
-    return cloner != null ? cloner : super.getResourceCloner();
-  }
+  // @Override
+  // public Metrics getMetrics() {
+  // return metrics();
+  // }
+  //
+  // @Override
+  // public ExecutorService getExecutorService() {
+  // return reconciliationExecutorService();
+  // }
+  //
+  // @Override
+  // public int concurrentReconciliationThreads() {
+  // return configuration.getConcurrentReconciliationThreads();
+  // }
+  //
+  // @Override
+  // public Cloner getResourceCloner() {
+  // return cloner != null ? cloner : super.getResourceCloner();
+  // }
+  //
+  // @Override
+  // public ResourceClassResolver getResourceClassResolver() {
+  // return resourceClassResolver != null ? resourceClassResolver :
+  // super.getResourceClassResolver();
+  // }
 }
