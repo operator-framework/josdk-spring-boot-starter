@@ -67,7 +67,7 @@ public class AutoConfigurationTest {
 
   @Test
   public void clonerIsOverridden() {
-    assertInstanceOf(OperatorAutoConfiguration.class, configurationService);
+    assertInstanceOf(OverridableBaseConfigService.class, configurationService);
     assertEquals(configurationService.getResourceCloner(), cloner);
   }
 

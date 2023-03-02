@@ -8,4 +8,5 @@ public class SpringBootStarterSampleApplicationIT {
 
   @Test
   void contextLoads() {}
+
 }

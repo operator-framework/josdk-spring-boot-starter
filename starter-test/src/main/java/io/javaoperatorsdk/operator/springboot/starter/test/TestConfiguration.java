@@ -43,8 +43,7 @@ public class TestConfiguration {
 
   @Bean
   public KubernetesClient kubernetesClient(KubernetesMockServer server,
-      TestConfigurationProperties properties)
-      throws InterruptedException {
+      TestConfigurationProperties properties) {
     final var client = server.createClient();
 
     Stream.concat(properties.getCrdPaths().stream(), properties.getGlobalCrdPaths().stream())

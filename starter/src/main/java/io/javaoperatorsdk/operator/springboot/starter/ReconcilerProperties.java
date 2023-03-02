@@ -5,8 +5,8 @@ import java.util.Set;
 public class ReconcilerProperties {
   private String name;
   private String finalizerName;
-  private boolean generationAware;
-  private boolean clusterScoped;
+  private Boolean generationAware;
+  private Boolean clusterScoped;
   private Set<String> namespaces;
   private RetryProperties retry;
 
@@ -26,19 +26,19 @@ public class ReconcilerProperties {
     this.finalizerName = finalizerName;
   }
 
-  public boolean isGenerationAware() {
+  public Boolean isGenerationAware() {
     return generationAware;
   }
 
-  public void setGenerationAware(boolean generationAware) {
+  public void setGenerationAware(Boolean generationAware) {
     this.generationAware = generationAware;
   }
 
-  public boolean isClusterScoped() {
+  public Boolean isClusterScoped() {
     return clusterScoped;
   }
 
-  public void setClusterScoped(boolean clusterScoped) {
+  public void setClusterScoped(Boolean clusterScoped) {
     this.clusterScoped = clusterScoped;
   }
 
