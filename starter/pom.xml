@@ -6,7 +6,7 @@
   <parent>
     <artifactId>operator-framework-spring-boot-starter-parent</artifactId>
     <groupId>io.javaoperatorsdk</groupId>
-    <version>4.1.2-SNAPSHOT</version>
+    <version>4.2.9-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
