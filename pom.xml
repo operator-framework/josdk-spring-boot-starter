@@ -49,7 +49,7 @@
         <josdk.version>4.2.8</josdk.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <fabric8-client.version>6.2.0</fabric8-client.version>
-        <formatter-maven-plugin.version>2.17.1</formatter-maven-plugin.version>
+        <formatter-maven-plugin.version>2.22.0</formatter-maven-plugin.version>
         <directory-maven-plugin.version>1.0</directory-maven-plugin.version>
         <impsort-maven-plugin.version>1.6.2</impsort-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
