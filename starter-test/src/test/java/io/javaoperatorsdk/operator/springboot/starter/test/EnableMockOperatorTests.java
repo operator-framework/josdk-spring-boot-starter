@@ -50,7 +50,7 @@ class EnableMockOperatorTests {
             .customResourceDefinitions()
             .withName("customservices.sample.javaoperatorsdk")
             .get())
-                .isNotNull();
+        .isNotNull();
     assertThat(
         client
             .apiextensions()
@@ -58,7 +58,7 @@ class EnableMockOperatorTests {
             .customResourceDefinitions()
             .withName("customservices.global.sample.javaoperatorsdk")
             .get())
-                .isNotNull();
+        .isNotNull();
   }
 
   @Autowired
