@@ -6,7 +6,7 @@
 
     <groupId>io.javaoperatorsdk</groupId>
     <artifactId>operator-framework-spring-boot-starter-parent</artifactId>
-    <version>4.2.9-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <name>Java Operator SDK Spring Boot Starter - Parent</name>
     <description>Spring Boot Starter for Java Operator SDK</description>
     <packaging>pom</packaging>
@@ -42,10 +42,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>11</java.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <spring-boot.version>2.7.9</spring-boot.version>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <spring-boot.version>3.0.5</spring-boot.version>
         <josdk.version>4.2.8</josdk.version>
         <surefire.version>3.0.0</surefire.version>
         <fabric8-client.version>6.2.0</fabric8-client.version>

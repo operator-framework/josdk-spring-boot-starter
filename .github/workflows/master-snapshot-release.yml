@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ 11, 17 ]
+        java: [ 17 ]
         distribution: [ temurin ]
     steps:
       - uses: actions/checkout@v3
@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 11
+          java-version: 17
           cache: 'maven'
       - name: Release Maven package
         uses: samuelmeuli/action-maven-publish@v1
