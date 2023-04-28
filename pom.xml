@@ -46,9 +46,9 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <spring-boot.version>3.0.6</spring-boot.version>
-        <josdk.version>4.2.8</josdk.version>
+        <josdk.version>4.3.1</josdk.version>
         <surefire.version>3.0.0</surefire.version>
-        <fabric8-client.version>6.2.0</fabric8-client.version>
+        <fabric8-client.version>6.5.1</fabric8-client.version>
         <formatter-maven-plugin.version>2.22.0</formatter-maven-plugin.version>
         <directory-maven-plugin.version>1.0</directory-maven-plugin.version>
         <impsort-maven-plugin.version>1.8.0</impsort-maven-plugin.version>
