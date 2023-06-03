@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -73,13 +74,13 @@ public class OperatorAutoConfiguration {
   @Bean(destroyMethod = "stop")
   @ConditionalOnMissingBean(Operator.class)
   public Operator operator(
+      BiConsumer<Operator, Reconciler<?>> reconcilerRegisterer,
       Consumer<ConfigurationServiceOverrider> compositeConfigurationServiceOverrider,
       KubernetesClient kubernetesClient,
       List<Reconciler<?>> reconcilers) {
 
     var operator = new Operator(kubernetesClient, compositeConfigurationServiceOverrider);
-    reconcilers.forEach(r -> operator.register(r,
-        o -> setControllerOverrides(o, configuration, r)));
+    reconcilers.forEach(reconciler -> reconcilerRegisterer.accept(operator, reconciler));
 
     if (!reconcilers.isEmpty()) {
       operator.start();
@@ -87,6 +88,16 @@ public class OperatorAutoConfiguration {
       log.warn("No Reconcilers found in the application context: Not starting the Operator");
     }
     return operator;
+  }
+
+  @Bean
+  public BiConsumer<Operator, Reconciler<?>> reconcilerRegisterer() {
+      return (operator, reconciler) -> {
+        var name = ReconcilerUtils.getNameFor(reconciler);
+        var props = configuration.getReconcilers().get(name);
+
+        operator.register(reconciler, overrider -> overrideFromProps(overrider, props));
+      };
   }
 
   @Bean
@@ -110,31 +121,23 @@ public class OperatorAutoConfiguration {
     };
   }
 
-
-  @SuppressWarnings("rawtypes")
-  private void setControllerOverrides(ControllerConfigurationOverrider<?> o,
-      OperatorConfigurationProperties configuration,
-      Reconciler<?> reconciler) {
-    final var reconcilerPropertiesMap = configuration.getReconcilers();
-    final var name = ReconcilerUtils.getNameFor(reconciler);
-    var props = reconcilerPropertiesMap.get(name);
-
+  private void overrideFromProps(ControllerConfigurationOverrider<?> overrider, ReconcilerProperties props) {
     if (props != null) {
-      doIfPresent(props.getFinalizerName(), o::withFinalizer);
-      doIfPresent(props.getName(), o::withName);
-      doIfPresent(props.getNamespaces(), o::settingNamespaces);
+      doIfPresent(props.getFinalizerName(), overrider::withFinalizer);
+      doIfPresent(props.getName(), overrider::withName);
+      doIfPresent(props.getNamespaces(), overrider::settingNamespaces);
       doIfPresent(props.getRetry(), r -> {
         var retry = new GenericRetry();
         doIfPresent(r.getInitialInterval(), retry::setInitialInterval);
         doIfPresent(r.getMaxAttempts(), retry::setMaxAttempts);
         doIfPresent(r.getMaxInterval(), retry::setMaxInterval);
         doIfPresent(r.getIntervalMultiplier(), retry::setIntervalMultiplier);
-        o.withRetry(retry);
+        overrider.withRetry(retry);
       });
-      doIfPresent(props.isGenerationAware(), o::withGenerationAware);
+      doIfPresent(props.isGenerationAware(), overrider::withGenerationAware);
       doIfPresent(props.isClusterScoped(), clusterScoped -> {
         if (clusterScoped) {
-          o.watchingAllNamespaces();
+          overrider.watchingAllNamespaces();
         }
       });
     }

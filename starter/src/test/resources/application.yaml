@@ -7,9 +7,15 @@ javaoperatorsdk:
 
   reconcilers:
     testreconciler:
+      clusterScoped: false
+      namespaces:
+        - ns1
+        - ns2
+      generationAware: true
+      finalizerName: "barton.fink/1991"
+      name: "not-a-test-reconciler"
       retry:
         maxAttempts: 3
         initialInterval: 1000
         intervalMultiplier: 1.5
         maxInterval: 50000
-        maxElapsedTime: 100000
