@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import io.javaoperatorsdk.operator.api.config.*;
 import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
+import org.springframework.core.annotation.Order;
 
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
@@ -71,11 +73,11 @@ public class OperatorAutoConfiguration {
   @Bean(destroyMethod = "stop")
   @ConditionalOnMissingBean(Operator.class)
   public Operator operator(
-      ConfigurationService configurationService,
+      Consumer<ConfigurationServiceOverrider> compositeConfigurationServiceOverrider,
       KubernetesClient kubernetesClient,
       List<Reconciler<?>> reconcilers) {
 
-    Operator operator = new Operator(kubernetesClient, configurationService);
+    var operator = new Operator(kubernetesClient, compositeConfigurationServiceOverrider);
     reconcilers.forEach(r -> operator.register(r,
         o -> setControllerOverrides(o, configuration, r)));
 
@@ -88,18 +90,24 @@ public class OperatorAutoConfiguration {
   }
 
   @Bean
-  public ConfigurationService configurationService(ResourceClassResolver resourceClassResolver,
-      Metrics metrics) {
-    OverridableBaseConfigService conf =
-        new OverridableBaseConfigService(Utils.loadFromProperties());
-    if (cloner != null) {
-      conf.setResourceCloner(cloner);
-    }
-    conf.setConcurrentReconciliationThreads(configuration.getConcurrentReconciliationThreads());
-    conf.setMetrics(metrics);
-    conf.setResourceClassResolver(resourceClassResolver);
-    conf.setCheckCRDAndValidateLocalModel(configuration.getCheckCrdAndValidateLocalModel());
-    return conf;
+  public Consumer<ConfigurationServiceOverrider> compositeConfigurationServiceOverrider(
+      List<Consumer<ConfigurationServiceOverrider>> configServiceOverriders) {
+    return configServiceOverriders.stream()
+        .reduce(Consumer::andThen)
+        .orElseThrow(() -> new IllegalStateException("Default Config Service Overrider Not Created"));
+  }
+
+  @Bean @Order(0)
+  public Consumer<ConfigurationServiceOverrider> defaultConfigServiceOverrider(
+      ResourceClassResolver resourceClassResolver, Metrics metrics) {
+    return overrider -> {
+      doIfPresent(cloner, overrider::withResourceCloner);
+      overrider
+          .withConcurrentReconciliationThreads(configuration.getConcurrentReconciliationThreads())
+          .withMetrics(metrics)
+          .withResourceClassResolver(resourceClassResolver)
+          .checkingCRDAndValidateLocalModel(configuration.getCheckCrdAndValidateLocalModel());
+    };
   }
 
 
@@ -112,27 +120,19 @@ public class OperatorAutoConfiguration {
     var props = reconcilerPropertiesMap.get(name);
 
     if (props != null) {
-      Optional.ofNullable(props.getFinalizerName()).ifPresent(o::withFinalizer);
-      Optional.ofNullable(props.getName()).ifPresent(o::withName);
-      Optional.ofNullable(props.getNamespaces()).ifPresent(o::settingNamespaces);
-      Optional.ofNullable(props.getRetry()).ifPresent(r -> {
+      doIfPresent(props.getFinalizerName(), o::withFinalizer);
+      doIfPresent(props.getName(), o::withName);
+      doIfPresent(props.getNamespaces(), o::settingNamespaces);
+      doIfPresent(props.getRetry(), r -> {
         var retry = new GenericRetry();
-        if (r.getInitialInterval() != null) {
-          retry.setInitialInterval(r.getInitialInterval());
-        }
-        if (r.getMaxAttempts() != null) {
-          retry.setMaxAttempts(r.getMaxAttempts());
-        }
-        if (r.getMaxInterval() != null) {
-          retry.setMaxInterval(r.getMaxInterval());
-        }
-        if (r.getIntervalMultiplier() != null) {
-          retry.setIntervalMultiplier(r.getIntervalMultiplier());
-        }
+        doIfPresent(r.getInitialInterval(), retry::setInitialInterval);
+        doIfPresent(r.getMaxAttempts(), retry::setMaxAttempts);
+        doIfPresent(r.getMaxInterval(), retry::setMaxInterval);
+        doIfPresent(r.getIntervalMultiplier(), retry::setIntervalMultiplier);
         o.withRetry(retry);
       });
-      Optional.ofNullable(props.isGenerationAware()).ifPresent(o::withGenerationAware);
-      Optional.ofNullable(props.isClusterScoped()).ifPresent(clusterScoped -> {
+      doIfPresent(props.isGenerationAware(), o::withGenerationAware);
+      doIfPresent(props.isClusterScoped(), clusterScoped -> {
         if (clusterScoped) {
           o.watchingAllNamespaces();
         }
@@ -180,4 +180,9 @@ public class OperatorAutoConfiguration {
           return config.build();
         });
   }
+
+  private <T> void doIfPresent(T prop, Consumer<T> action) {
+    Optional.ofNullable(prop).ifPresent(action);
+  }
+
 }

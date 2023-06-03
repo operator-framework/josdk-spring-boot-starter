@@ -1,7 +1,10 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
 import java.util.List;
+import java.util.function.Consumer;
 
+import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
+import io.javaoperatorsdk.operator.api.config.ConfigurationServiceProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +16,16 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.ReconcilerUtils;
 import io.javaoperatorsdk.operator.api.config.Cloner;
-import io.javaoperatorsdk.operator.api.config.ConfigurationService;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class AutoConfigurationTest {
+
+  static final int CUSTOM_RECONCILE_THREADS = 42;
 
   @Autowired
   private OperatorConfigurationProperties config;
@@ -35,7 +40,7 @@ public class AutoConfigurationTest {
   private List<Reconciler<?>> reconcilers;
 
   @Autowired
-  private ConfigurationService configurationService;
+  private Consumer<ConfigurationServiceOverrider> compositeConfigurationServiceOverrider;
 
   @MockBean
   private Cloner cloner;
@@ -62,12 +67,17 @@ public class AutoConfigurationTest {
   @Test
   public void beansCreated() {
     assertNotNull(kubernetesClient);
-    assertNotNull(configurationService);
+    assertNotNull(compositeConfigurationServiceOverrider);
   }
 
   @Test
-  public void clonerIsOverridden() {
-    assertInstanceOf(OverridableBaseConfigService.class, configurationService);
+  public void configServiceOverridesAppliedInCorrectOrder() {
+    var configurationService = ConfigurationServiceProvider.overrideCurrent(compositeConfigurationServiceOverrider);
+
+    assertThat(config.getConcurrentReconciliationThreads())
+        .isNotEqualTo(CUSTOM_RECONCILE_THREADS);
+    assertThat(configurationService.concurrentReconciliationThreads())
+        .isEqualTo(CUSTOM_RECONCILE_THREADS);
     assertEquals(configurationService.getResourceCloner(), cloner);
   }
 
