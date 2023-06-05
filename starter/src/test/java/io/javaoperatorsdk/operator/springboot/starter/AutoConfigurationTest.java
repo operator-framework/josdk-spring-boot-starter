@@ -4,10 +4,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
-import io.javaoperatorsdk.operator.api.config.ConfigurationServiceProvider;
-import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
-import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +17,11 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.ReconcilerUtils;
 import io.javaoperatorsdk.operator.api.config.Cloner;
+import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
+import io.javaoperatorsdk.operator.api.config.ConfigurationServiceProvider;
+import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.atIndex;
@@ -100,19 +100,19 @@ public class AutoConfigurationTest {
     assertThat(controllers.stream().toList())
         .satisfies(controller -> {
           assertThat((ControllerConfiguration<?>) controller.getConfiguration())
-            .satisfies(config -> {
-              assertThat(config.getNamespaces()).containsExactlyInAnyOrder("ns1", "ns2");
-              assertThat(config.isGenerationAware()).isTrue();
-              assertThat(config.getName()).isEqualTo("not-a-test-reconciler");
-              assertThat(config.getFinalizerName()).isEqualTo("barton.fink/1991");
-            });
+              .satisfies(config -> {
+                assertThat(config.getNamespaces()).containsExactlyInAnyOrder("ns1", "ns2");
+                assertThat(config.isGenerationAware()).isTrue();
+                assertThat(config.getName()).isEqualTo("not-a-test-reconciler");
+                assertThat(config.getFinalizerName()).isEqualTo("barton.fink/1991");
+              });
           assertThat(controller.getConfiguration().getRetry())
-            .isInstanceOfSatisfying(GenericRetry.class, retry -> {
-              assertThat(retry.getMaxAttempts()).isEqualTo(3);
-              assertThat(retry.getInitialInterval()).isEqualTo(1000);
-              assertThat(retry.getIntervalMultiplier()).isEqualTo(1.5);
-              assertThat(retry.getMaxInterval()).isEqualTo(50000);
-            });
+              .isInstanceOfSatisfying(GenericRetry.class, retry -> {
+                assertThat(retry.getMaxAttempts()).isEqualTo(3);
+                assertThat(retry.getInitialInterval()).isEqualTo(1000);
+                assertThat(retry.getIntervalMultiplier()).isEqualTo(1.5);
+                assertThat(retry.getMaxInterval()).isEqualTo(50000);
+              });
         }, atIndex(0));
   }
 

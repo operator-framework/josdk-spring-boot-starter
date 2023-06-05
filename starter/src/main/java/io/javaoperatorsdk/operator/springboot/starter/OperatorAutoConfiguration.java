@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
@@ -27,7 +28,6 @@ import io.javaoperatorsdk.operator.api.config.*;
 import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
-import org.springframework.core.annotation.Order;
 
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
@@ -92,12 +92,12 @@ public class OperatorAutoConfiguration {
 
   @Bean
   public BiConsumer<Operator, Reconciler<?>> reconcilerRegisterer() {
-      return (operator, reconciler) -> {
-        var name = ReconcilerUtils.getNameFor(reconciler);
-        var props = configuration.getReconcilers().get(name);
+    return (operator, reconciler) -> {
+      var name = ReconcilerUtils.getNameFor(reconciler);
+      var props = configuration.getReconcilers().get(name);
 
-        operator.register(reconciler, overrider -> overrideFromProps(overrider, props));
-      };
+      operator.register(reconciler, overrider -> overrideFromProps(overrider, props));
+    };
   }
 
   @Bean
@@ -105,10 +105,12 @@ public class OperatorAutoConfiguration {
       List<Consumer<ConfigurationServiceOverrider>> configServiceOverriders) {
     return configServiceOverriders.stream()
         .reduce(Consumer::andThen)
-        .orElseThrow(() -> new IllegalStateException("Default Config Service Overrider Not Created"));
+        .orElseThrow(
+            () -> new IllegalStateException("Default Config Service Overrider Not Created"));
   }
 
-  @Bean @Order(0)
+  @Bean
+  @Order(0)
   public Consumer<ConfigurationServiceOverrider> defaultConfigServiceOverrider(
       ResourceClassResolver resourceClassResolver, Metrics metrics) {
     return overrider -> {
@@ -121,7 +123,8 @@ public class OperatorAutoConfiguration {
     };
   }
 
-  private void overrideFromProps(ControllerConfigurationOverrider<?> overrider, ReconcilerProperties props) {
+  private void overrideFromProps(ControllerConfigurationOverrider<?> overrider,
+      ReconcilerProperties props) {
     if (props != null) {
       doIfPresent(props.getFinalizerName(), overrider::withFinalizer);
       doIfPresent(props.getName(), overrider::withName);
