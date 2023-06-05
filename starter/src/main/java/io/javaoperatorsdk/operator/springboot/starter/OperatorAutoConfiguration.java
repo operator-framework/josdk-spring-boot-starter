@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
@@ -71,13 +74,13 @@ public class OperatorAutoConfiguration {
   @Bean(destroyMethod = "stop")
   @ConditionalOnMissingBean(Operator.class)
   public Operator operator(
-      ConfigurationService configurationService,
+      BiConsumer<Operator, Reconciler<?>> reconcilerRegisterer,
+      Consumer<ConfigurationServiceOverrider> compositeConfigurationServiceOverrider,
       KubernetesClient kubernetesClient,
       List<Reconciler<?>> reconcilers) {
 
-    Operator operator = new Operator(kubernetesClient, configurationService);
-    reconcilers.forEach(r -> operator.register(r,
-        o -> setControllerOverrides(o, configuration, r)));
+    var operator = new Operator(kubernetesClient, compositeConfigurationServiceOverrider);
+    reconcilers.forEach(reconciler -> reconcilerRegisterer.accept(operator, reconciler));
 
     if (!reconcilers.isEmpty()) {
       operator.start();
@@ -88,53 +91,56 @@ public class OperatorAutoConfiguration {
   }
 
   @Bean
-  public ConfigurationService configurationService(ResourceClassResolver resourceClassResolver,
-      Metrics metrics) {
-    OverridableBaseConfigService conf =
-        new OverridableBaseConfigService(Utils.loadFromProperties());
-    if (cloner != null) {
-      conf.setResourceCloner(cloner);
-    }
-    conf.setConcurrentReconciliationThreads(configuration.getConcurrentReconciliationThreads());
-    conf.setMetrics(metrics);
-    conf.setResourceClassResolver(resourceClassResolver);
-    conf.setCheckCRDAndValidateLocalModel(configuration.getCheckCrdAndValidateLocalModel());
-    return conf;
+  public BiConsumer<Operator, Reconciler<?>> reconcilerRegisterer() {
+    return (operator, reconciler) -> {
+      var name = ReconcilerUtils.getNameFor(reconciler);
+      var props = configuration.getReconcilers().get(name);
+
+      operator.register(reconciler, overrider -> overrideFromProps(overrider, props));
+    };
   }
 
+  @Bean
+  public Consumer<ConfigurationServiceOverrider> compositeConfigurationServiceOverrider(
+      List<Consumer<ConfigurationServiceOverrider>> configServiceOverriders) {
+    return configServiceOverriders.stream()
+        .reduce(Consumer::andThen)
+        .orElseThrow(
+            () -> new IllegalStateException("Default Config Service Overrider Not Created"));
+  }
 
-  @SuppressWarnings("rawtypes")
-  private void setControllerOverrides(ControllerConfigurationOverrider<?> o,
-      OperatorConfigurationProperties configuration,
-      Reconciler<?> reconciler) {
-    final var reconcilerPropertiesMap = configuration.getReconcilers();
-    final var name = ReconcilerUtils.getNameFor(reconciler);
-    var props = reconcilerPropertiesMap.get(name);
+  @Bean
+  @Order(0)
+  public Consumer<ConfigurationServiceOverrider> defaultConfigServiceOverrider(
+      ResourceClassResolver resourceClassResolver, Metrics metrics) {
+    return overrider -> {
+      doIfPresent(cloner, overrider::withResourceCloner);
+      overrider
+          .withConcurrentReconciliationThreads(configuration.getConcurrentReconciliationThreads())
+          .withMetrics(metrics)
+          .withResourceClassResolver(resourceClassResolver)
+          .checkingCRDAndValidateLocalModel(configuration.getCheckCrdAndValidateLocalModel());
+    };
+  }
 
+  private void overrideFromProps(ControllerConfigurationOverrider<?> overrider,
+      ReconcilerProperties props) {
     if (props != null) {
-      Optional.ofNullable(props.getFinalizerName()).ifPresent(o::withFinalizer);
-      Optional.ofNullable(props.getName()).ifPresent(o::withName);
-      Optional.ofNullable(props.getNamespaces()).ifPresent(o::settingNamespaces);
-      Optional.ofNullable(props.getRetry()).ifPresent(r -> {
+      doIfPresent(props.getFinalizerName(), overrider::withFinalizer);
+      doIfPresent(props.getName(), overrider::withName);
+      doIfPresent(props.getNamespaces(), overrider::settingNamespaces);
+      doIfPresent(props.getRetry(), r -> {
         var retry = new GenericRetry();
-        if (r.getInitialInterval() != null) {
-          retry.setInitialInterval(r.getInitialInterval());
-        }
-        if (r.getMaxAttempts() != null) {
-          retry.setMaxAttempts(r.getMaxAttempts());
-        }
-        if (r.getMaxInterval() != null) {
-          retry.setMaxInterval(r.getMaxInterval());
-        }
-        if (r.getIntervalMultiplier() != null) {
-          retry.setIntervalMultiplier(r.getIntervalMultiplier());
-        }
-        o.withRetry(retry);
+        doIfPresent(r.getInitialInterval(), retry::setInitialInterval);
+        doIfPresent(r.getMaxAttempts(), retry::setMaxAttempts);
+        doIfPresent(r.getMaxInterval(), retry::setMaxInterval);
+        doIfPresent(r.getIntervalMultiplier(), retry::setIntervalMultiplier);
+        overrider.withRetry(retry);
       });
-      Optional.ofNullable(props.isGenerationAware()).ifPresent(o::withGenerationAware);
-      Optional.ofNullable(props.isClusterScoped()).ifPresent(clusterScoped -> {
+      doIfPresent(props.isGenerationAware(), overrider::withGenerationAware);
+      doIfPresent(props.isClusterScoped(), clusterScoped -> {
         if (clusterScoped) {
-          o.watchingAllNamespaces();
+          overrider.watchingAllNamespaces();
         }
       });
     }
@@ -180,4 +186,9 @@ public class OperatorAutoConfiguration {
           return config.build();
         });
   }
+
+  private <T> void doIfPresent(T prop, Consumer<T> action) {
+    Optional.ofNullable(prop).ifPresent(action);
+  }
+
 }
