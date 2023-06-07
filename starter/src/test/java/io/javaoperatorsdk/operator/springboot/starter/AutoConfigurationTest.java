@@ -1,5 +1,6 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -78,13 +79,20 @@ public class AutoConfigurationTest {
 
   @Test
   public void configServiceOverridesAppliedInCorrectOrder() {
-    var configurationService = ConfigurationServiceProvider.instance();
+    var configService = ConfigurationServiceProvider.instance();
 
     assertThat(config.getConcurrentReconciliationThreads())
-        .isNotEqualTo(CUSTOM_RECONCILE_THREADS);
-    assertThat(configurationService.concurrentReconciliationThreads())
+        .isEqualTo(6).isNotEqualTo(CUSTOM_RECONCILE_THREADS);
+    assertThat(configService.concurrentReconciliationThreads())
         .isEqualTo(CUSTOM_RECONCILE_THREADS);
-    assertEquals(configurationService.getResourceCloner(), cloner);
+    assertEquals(configService.getResourceCloner(), cloner);
+    assertThat(configService.cacheSyncTimeout()).isEqualTo(Duration.ofDays(17));
+    assertThat(configService.closeClientOnStop()).isFalse();
+    assertThat(configService.stopOnInformerErrorDuringStartup()).isFalse();
+    assertThat(configService.checkCRDAndValidateLocalModel()).isFalse();
+    assertThat(configService.concurrentWorkflowExecutorThreads()).isEqualTo(12);
+    assertThat(configService.minConcurrentReconciliationThreads()).isEqualTo(22);
+    assertThat(configService.minConcurrentWorkflowExecutorThreads()).isEqualTo(32);
   }
 
   @Test
@@ -105,6 +113,8 @@ public class AutoConfigurationTest {
                 assertThat(config.isGenerationAware()).isTrue();
                 assertThat(config.getName()).isEqualTo("not-a-test-reconciler");
                 assertThat(config.getFinalizerName()).isEqualTo("barton.fink/1991");
+                assertThat(config.getLabelSelector()).isEqualTo("version in (v1)");
+                assertThat(config.maxReconciliationInterval()).hasValue(Duration.ofMinutes(3));
               });
           assertThat(controller.getConfiguration().getRetry())
               .isInstanceOfSatisfying(GenericRetry.class, retry -> {

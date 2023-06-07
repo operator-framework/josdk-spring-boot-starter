@@ -1,5 +1,6 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
+import java.time.Duration;
 import java.util.Set;
 
 public class ReconcilerProperties {
@@ -9,6 +10,8 @@ public class ReconcilerProperties {
   private Boolean clusterScoped;
   private Set<String> namespaces;
   private RetryProperties retry;
+  private String labelSelector;
+  private Duration reconciliationMaxInterval;
 
   public String getName() {
     return name;
@@ -56,5 +59,21 @@ public class ReconcilerProperties {
 
   public void setRetry(RetryProperties retry) {
     this.retry = retry;
+  }
+
+  public String getLabelSelector() {
+    return labelSelector;
+  }
+
+  public void setLabelSelector(String labelSelector) {
+    this.labelSelector = labelSelector;
+  }
+
+  public Duration getReconciliationMaxInterval() {
+    return reconciliationMaxInterval;
+  }
+
+  public void setReconciliationMaxInterval(Duration reconciliationMaxInterval) {
+    this.reconciliationMaxInterval = reconciliationMaxInterval;
   }
 }
