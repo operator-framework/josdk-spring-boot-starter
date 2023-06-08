@@ -1,4 +1,13 @@
 javaoperatorsdk:
+  cache-sync-timeout: 17d
+  close-client-on-stop: false
+  concurrent-reconciliation-threads: 6
+  stop-on-informer-error-during-startup: false
+  check-crd-and-validate-local-model: false
+  concurrent-workflow-executor-threads: 12
+  min-concurrent-reconciliation-threads: 22
+  min-concurrent-workflow-executor-threads: 32
+
   client:
     username: user
     password: password
@@ -14,6 +23,8 @@ javaoperatorsdk:
       generationAware: true
       finalizerName: "barton.fink/1991"
       name: "not-a-test-reconciler"
+      reconciliation-max-interval: 3m
+      labelSelector: "version in (v1)"
       retry:
         maxAttempts: 3
         initialInterval: 1000

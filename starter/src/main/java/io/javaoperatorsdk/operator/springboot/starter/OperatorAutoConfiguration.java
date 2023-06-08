@@ -38,12 +38,6 @@ public class OperatorAutoConfiguration {
   @Autowired
   private OperatorConfigurationProperties configuration;
 
-  @Autowired(required = false)
-  private Cloner cloner;
-
-  @Autowired(required = false)
-  private KubernetesConfigCustomizer configCustomizer;
-
   @Bean
   @ConditionalOnMissingBean
   public KubernetesClient kubernetesClient(Optional<HttpClient.Factory> httpClientFactory,
@@ -112,9 +106,21 @@ public class OperatorAutoConfiguration {
   @Bean
   @Order(0)
   public Consumer<ConfigurationServiceOverrider> defaultConfigServiceOverrider(
-      ResourceClassResolver resourceClassResolver, Metrics metrics) {
+      @Autowired(required = false) Cloner cloner,
+      ResourceClassResolver resourceClassResolver,
+      Metrics metrics) {
     return overrider -> {
       doIfPresent(cloner, overrider::withResourceCloner);
+      doIfPresent(configuration.getMinConcurrentWorkflowExecutorThreads(),
+          overrider::withMinConcurrentWorkflowExecutorThreads);
+      doIfPresent(configuration.getMinConcurrentReconciliationThreads(),
+          overrider::withMinConcurrentReconciliationThreads);
+      doIfPresent(configuration.getStopOnInformerErrorDuringStartup(),
+          overrider::withStopOnInformerErrorDuringStartup);
+      doIfPresent(configuration.getConcurrentWorkflowExecutorThreads(),
+          overrider::withConcurrentWorkflowExecutorThreads);
+      doIfPresent(configuration.getCloseClientOnStop(), overrider::withCloseClientOnStop);
+      doIfPresent(configuration.getCacheSyncTimeout(), overrider::withCacheSyncTimeout);
       overrider
           .withConcurrentReconciliationThreads(configuration.getConcurrentReconciliationThreads())
           .withMetrics(metrics)
@@ -143,6 +149,8 @@ public class OperatorAutoConfiguration {
           overrider.watchingAllNamespaces();
         }
       });
+      doIfPresent(props.getLabelSelector(), overrider::withLabelSelector);
+      doIfPresent(props.getReconciliationMaxInterval(), overrider::withReconciliationMaxInterval);
     }
   }
 
@@ -159,7 +167,8 @@ public class OperatorAutoConfiguration {
   }
 
   @Bean
-  public Config getClientConfiguration() {
+  public Config getClientConfiguration(
+      @Autowired(required = false) KubernetesConfigCustomizer configCustomizer) {
     return configuration.getClient().getContext()
         .map(Config::autoConfigure)
         .map(it -> {
