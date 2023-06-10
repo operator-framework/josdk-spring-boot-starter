@@ -28,6 +28,7 @@ import io.javaoperatorsdk.operator.api.config.*;
 import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
+import io.javaoperatorsdk.operator.springboot.starter.CrdUploader.CrdTransformer;
 
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
@@ -57,12 +58,22 @@ public class OperatorAutoConfiguration {
                 .build());
   }
 
-
-
   @Bean
   @ConditionalOnMissingBean(ResourceClassResolver.class)
   public ResourceClassResolver resourceClassResolver() {
     return new DefaultResourceClassResolver();
+  }
+
+  @Bean
+  public CrdUploader crdUploader(KubernetesClient client, List<CrdTransformer> transformers) {
+    var crd = configuration.getCrd();
+    return new CrdUploader(client, transformers,
+        crd.isApplyOnStartup(), crd.getPath(), crd.getSuffix());
+  }
+
+  @Bean
+  public OperatorStarter operatorStarter(Operator operator, CrdUploader uploader) {
+    return new OperatorStarter(operator, uploader);
   }
 
   @Bean(destroyMethod = "stop")
@@ -76,11 +87,6 @@ public class OperatorAutoConfiguration {
     var operator = new Operator(kubernetesClient, compositeConfigurationServiceOverrider);
     reconcilers.forEach(reconciler -> reconcilerRegisterer.accept(operator, reconciler));
 
-    if (!reconcilers.isEmpty()) {
-      operator.start();
-    } else {
-      log.warn("No Reconcilers found in the application context: Not starting the Operator");
-    }
     return operator;
   }
 
