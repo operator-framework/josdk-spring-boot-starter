@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,8 @@ import io.javaoperatorsdk.operator.api.config.*;
 import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
-import io.javaoperatorsdk.operator.springboot.starter.CrdUploader.CrdTransformer;
+import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.CRDTransformer;
+import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.DefaultCRDApplier;
 
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
@@ -65,15 +67,21 @@ public class OperatorAutoConfiguration {
   }
 
   @Bean
-  public CrdUploader crdUploader(KubernetesClient client, List<CrdTransformer> transformers) {
+  @ConditionalOnProperty(value = "javaoperatorsdk.crd.apply-on-startup", havingValue = "true")
+  public CRDApplier crdApplier(KubernetesClient client, List<CRDTransformer> transformers) {
     var crd = configuration.getCrd();
-    return new CrdUploader(client, transformers,
-        crd.isApplyOnStartup(), crd.getPath(), crd.getSuffix());
+    return new DefaultCRDApplier(client, transformers, crd.getPath(), crd.getSuffix());
   }
 
   @Bean
-  public OperatorStarter operatorStarter(Operator operator, CrdUploader uploader) {
-    return new OperatorStarter(operator, uploader);
+  @ConditionalOnMissingBean(CRDApplier.class)
+  public CRDApplier disabledCrdApplier() {
+    return CRDApplier.NOOP;
+  }
+
+  @Bean
+  public OperatorStarter operatorStarter(Operator operator, CRDApplier applier) {
+    return new OperatorStarter(operator, applier);
   }
 
   @Bean(destroyMethod = "stop")

@@ -13,18 +13,18 @@ public class OperatorStarter {
   private static final Logger log = LoggerFactory.getLogger(OperatorStarter.class);
 
   private final Operator operator;
-  private final CrdUploader crdUploader;
+  private final CRDApplier crdApplier;
 
-  public OperatorStarter(Operator operator, CrdUploader crdUploader) {
+  public OperatorStarter(Operator operator, CRDApplier crdApplier) {
     this.operator = operator;
-    this.crdUploader = crdUploader;
+    this.crdApplier = crdApplier;
   }
 
   @EventListener
   public void start(ApplicationReadyEvent event) {
     if (!operator.getRegisteredControllers().isEmpty()) {
       try {
-        crdUploader.upload();
+        crdApplier.apply();
         operator.start();
       } catch (Exception ex) {
         log.error("Could not start operator", ex);

@@ -18,7 +18,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ListOptionsBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.config.ConfigurationServiceProvider;
-import io.javaoperatorsdk.operator.springboot.starter.CrdUploader.CrdTransformer;
+import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.CRDTransformer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -80,13 +80,13 @@ public class AutoConfigurationIntegrationTest {
     }
 
     @Bean
-    public CrdTransformer transformerOne() {
+    public CRDTransformer transformerOne() {
       return crd -> addLabel(crd, "Glory", "Glory");
     }
 
 
     @Bean
-    public CrdTransformer transformerTwo() {
+    public CRDTransformer transformerTwo() {
       return crd -> addLabel(crd, "Man", "United");
     }
 

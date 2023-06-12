@@ -25,7 +25,7 @@ public class OperatorStarterTest {
   @Mock
   private Operator operator;
   @Mock
-  private CrdUploader crdUploader;
+  private CRDApplier CRDApplier;
   @Mock
   private ApplicationReadyEvent event;
   @Mock
@@ -34,37 +34,37 @@ public class OperatorStarterTest {
   private OperatorStarter starter;
 
   @Test
-  void shouldShutdownOnUploadFailure() throws Exception {
+  void shouldShutdownOnApplyFailure() {
     when(event.getApplicationContext()).thenReturn(context);
     when(operator.getRegisteredControllers()).thenReturn(Set.of(mock(RegisteredController.class)));
-    doThrow(new IllegalStateException("False Knees")).when(crdUploader).upload();
+    doThrow(new IllegalStateException("False Knees")).when(CRDApplier).apply();
 
     starter.start(event);
 
-    verify(crdUploader).upload();
+    verify(CRDApplier).apply();
     verify(operator, never()).start();
     verify(context).close();
   }
 
   @Test
-  void shouldShutdownOnStartFailure() throws Exception {
+  void shouldShutdownOnStartFailure() {
     when(event.getApplicationContext()).thenReturn(context);
     when(operator.getRegisteredControllers()).thenReturn(Set.of(mock(RegisteredController.class)));
     doThrow(new IllegalStateException("False Knees")).when(operator).start();
 
     starter.start(event);
 
-    verify(crdUploader).upload();
+    verify(CRDApplier).apply();
     verify(operator).start();
     verify(context).close();
   }
 
   @Test
-  void shouldNotStartWithoutReconcilers() throws Exception {
+  void shouldNotStartWithoutReconcilers() {
     starter.start(event);
 
     verify(operator, never()).start();
-    verify(crdUploader, never()).upload();
+    verify(CRDApplier, never()).apply();
   }
 
 }
