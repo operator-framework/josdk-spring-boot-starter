@@ -1,0 +1,22 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: josdkdeepresources.josdk.io
+spec:
+  group: josdk.io
+  names:
+    kind: JosdkDeeperResource
+    plural: josdkdeepresources
+    singular: josdkdeepresource
+  scope: Namespaced
+  versions:
+    - name: v1
+      schema:
+        openAPIV3Schema:
+          properties:
+            dummy: dummy
+          type: object
+      served: true
+      storage: false
+      subresources:
+        status: {}

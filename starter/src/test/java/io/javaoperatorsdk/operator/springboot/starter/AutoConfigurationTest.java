@@ -2,17 +2,18 @@ package io.javaoperatorsdk.operator.springboot.starter;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.Operator;
@@ -26,10 +27,17 @@ import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.atIndex;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doNothing;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
+@SpringBootTest(properties = {
+    "javaoperatorsdk.client.masterUrl=http://master.url",
+    "javaoperatorsdk.client.username=user",
+    "javaoperatorsdk.client.password=password",
+    "javaoperatorsdk.client.oauthToken=token"
+})
 public class AutoConfigurationTest {
 
   static final int CUSTOM_RECONCILE_THREADS = 42;
@@ -37,7 +45,7 @@ public class AutoConfigurationTest {
   @Autowired
   private OperatorConfigurationProperties config;
 
-  @Autowired
+  @SpyBean
   private Operator operator;
 
   @Autowired
@@ -51,6 +59,11 @@ public class AutoConfigurationTest {
 
   @MockBean
   private Cloner cloner;
+
+  @BeforeAll
+  static void beforeAll() {
+    ConfigurationServiceProvider.reset();
+  }
 
   @Test
   public void loadsKubernetesClientPropertiesProperly() {
@@ -82,7 +95,7 @@ public class AutoConfigurationTest {
     var configService = ConfigurationServiceProvider.instance();
 
     assertThat(config.getConcurrentReconciliationThreads())
-        .isEqualTo(6).isNotEqualTo(CUSTOM_RECONCILE_THREADS);
+        .isEqualTo(60).isNotEqualTo(CUSTOM_RECONCILE_THREADS);
     assertThat(configService.concurrentReconciliationThreads())
         .isEqualTo(CUSTOM_RECONCILE_THREADS);
     assertEquals(configService.getResourceCloner(), cloner);
@@ -90,9 +103,9 @@ public class AutoConfigurationTest {
     assertThat(configService.closeClientOnStop()).isFalse();
     assertThat(configService.stopOnInformerErrorDuringStartup()).isFalse();
     assertThat(configService.checkCRDAndValidateLocalModel()).isFalse();
-    assertThat(configService.concurrentWorkflowExecutorThreads()).isEqualTo(12);
     assertThat(configService.minConcurrentReconciliationThreads()).isEqualTo(22);
-    assertThat(configService.minConcurrentWorkflowExecutorThreads()).isEqualTo(32);
+    assertThat(configService.concurrentWorkflowExecutorThreads()).isEqualTo(32);
+    assertThat(configService.minConcurrentWorkflowExecutorThreads()).isEqualTo(12);
   }
 
   @Test
@@ -129,16 +142,17 @@ public class AutoConfigurationTest {
   @TestConfiguration
   static class TestConfig {
     @Bean
-    public Operator unstartedOperator(
-        BiConsumer<Operator, Reconciler<?>> reconcilerRegisterer,
-        Consumer<ConfigurationServiceOverrider> compositeConfigurationServiceOverrider,
-        KubernetesClient kubernetesClient,
-        List<Reconciler<?>> reconcilers) {
-
-      var operator = new Operator(kubernetesClient, compositeConfigurationServiceOverrider);
-      reconcilers.forEach(reconciler -> reconcilerRegisterer.accept(operator, reconciler));
-
-      return operator;
+    public BeanPostProcessor operatorPostProcessor() {
+      return new BeanPostProcessor() {
+        @Override
+        public Object postProcessAfterInitialization(Object bean, String beanName)
+            throws BeansException {
+          if (bean instanceof Operator operator) {
+            doNothing().when(operator).start();
+          }
+          return bean;
+        }
+      };
     }
 
     @Bean

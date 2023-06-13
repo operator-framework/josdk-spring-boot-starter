@@ -11,6 +11,7 @@ import io.javaoperatorsdk.operator.api.config.ConfigurationService;
 @ConfigurationProperties(prefix = "javaoperatorsdk")
 public class OperatorConfigurationProperties {
 
+  private CrdProperties crd = new CrdProperties();
   private KubernetesClientProperties client = new KubernetesClientProperties();
   private Map<String, ReconcilerProperties> reconcilers = Collections.emptyMap();
   private boolean checkCrdAndValidateLocalModel = true;
@@ -102,5 +103,50 @@ public class OperatorConfigurationProperties {
 
   public void setCacheSyncTimeout(Duration cacheSyncTimeout) {
     this.cacheSyncTimeout = cacheSyncTimeout;
+  }
+
+  public CrdProperties getCrd() {
+    return crd;
+  }
+
+  public void setCrd(CrdProperties crd) {
+    this.crd = crd;
+  }
+
+  public static class CrdProperties {
+
+    private boolean applyOnStartup;
+    /**
+     * path to the resource folder where CRDs are located
+     */
+    private String path = "/META-INF/fabric8/";
+    /**
+     * file suffix to filter out CRDs
+     */
+    private String suffix = "-v1.yml";
+
+    public boolean isApplyOnStartup() {
+      return applyOnStartup;
+    }
+
+    public void setApplyOnStartup(boolean applyOnStartup) {
+      this.applyOnStartup = applyOnStartup;
+    }
+
+    public String getPath() {
+      return path;
+    }
+
+    public void setPath(String path) {
+      this.path = path;
+    }
+
+    public String getSuffix() {
+      return suffix;
+    }
+
+    public void setSuffix(String suffix) {
+      this.suffix = suffix;
+    }
   }
 }

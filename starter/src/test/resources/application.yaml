@@ -1,18 +1,16 @@
 javaoperatorsdk:
   cache-sync-timeout: 17d
   close-client-on-stop: false
-  concurrent-reconciliation-threads: 6
   stop-on-informer-error-during-startup: false
   check-crd-and-validate-local-model: false
-  concurrent-workflow-executor-threads: 12
+  concurrent-reconciliation-threads: 60
   min-concurrent-reconciliation-threads: 22
-  min-concurrent-workflow-executor-threads: 32
-
-  client:
-    username: user
-    password: password
-    oauthToken: token
-    masterUrl: http://master.url
+  concurrent-workflow-executor-threads: 32
+  min-concurrent-workflow-executor-threads: 12
+  crd:
+    apply-on-startup: false
+    path: /META-INF/fabric8/deeper
+    suffix: -v1.yml
 
   reconcilers:
     testreconciler:

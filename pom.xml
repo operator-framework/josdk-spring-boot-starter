@@ -45,10 +45,12 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
         <spring-boot.version>3.1.0</spring-boot.version>
         <josdk.version>4.3.5</josdk.version>
         <surefire.version>3.1.2</surefire.version>
         <fabric8-client.version>6.7.1</fabric8-client.version>
+        <bouncy.castle.version>1.69</bouncy.castle.version>
         <formatter-maven-plugin.version>2.23.0</formatter-maven-plugin.version>
         <directory-maven-plugin.version>1.0</directory-maven-plugin.version>
         <impsort-maven-plugin.version>1.9.0</impsort-maven-plugin.version>
@@ -111,6 +113,12 @@
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>${bouncy.castle.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
