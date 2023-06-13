@@ -6,7 +6,7 @@
     <parent>
         <artifactId>operator-framework-spring-boot-starter-samples-parent</artifactId>
         <groupId>io.javaoperatorsdk</groupId>
-        <version>5.0.1-SNAPSHOT</version>
+        <version>5.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>operator-framework-spring-boot-starter-samples-common</artifactId>
