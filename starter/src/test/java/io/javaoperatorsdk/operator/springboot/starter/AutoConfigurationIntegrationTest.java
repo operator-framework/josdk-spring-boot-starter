@@ -1,6 +1,5 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,7 +10,6 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ListOptionsBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.jenvtest.junit.EnableKubeAPIServer;
-import io.javaoperatorsdk.operator.api.config.ConfigurationServiceProvider;
 import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.CRDTransformer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,11 +20,6 @@ public class AutoConfigurationIntegrationTest {
 
   @Autowired
   private KubernetesClient kubernetesClient;
-
-  @BeforeAll
-  static void beforeAll() {
-    ConfigurationServiceProvider.reset();
-  }
 
   @Test
   void crdsUploadedAndTransformersApplied() {
