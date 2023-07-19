@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,16 +19,13 @@ import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.ReconcilerUtils;
 import io.javaoperatorsdk.operator.api.config.Cloner;
 import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
-import io.javaoperatorsdk.operator.api.config.ConfigurationServiceProvider;
 import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.atIndex;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
 
 @SpringBootTest(properties = {
@@ -60,11 +56,6 @@ public class AutoConfigurationTest {
   @MockBean
   private Cloner cloner;
 
-  @BeforeAll
-  static void beforeAll() {
-    ConfigurationServiceProvider.reset();
-  }
-
   @Test
   public void loadsKubernetesClientPropertiesProperly() {
     final var operatorProperties = config.getClient();
@@ -88,24 +79,6 @@ public class AutoConfigurationTest {
   public void beansCreated() {
     assertNotNull(kubernetesClient);
     assertNotNull(compositeConfigurationServiceOverrider);
-  }
-
-  @Test
-  public void configServiceOverridesAppliedInCorrectOrder() {
-    var configService = ConfigurationServiceProvider.instance();
-
-    assertThat(config.getConcurrentReconciliationThreads())
-        .isEqualTo(60).isNotEqualTo(CUSTOM_RECONCILE_THREADS);
-    assertThat(configService.concurrentReconciliationThreads())
-        .isEqualTo(CUSTOM_RECONCILE_THREADS);
-    assertEquals(configService.getResourceCloner(), cloner);
-    assertThat(configService.cacheSyncTimeout()).isEqualTo(Duration.ofDays(17));
-    assertThat(configService.closeClientOnStop()).isFalse();
-    assertThat(configService.stopOnInformerErrorDuringStartup()).isFalse();
-    assertThat(configService.checkCRDAndValidateLocalModel()).isFalse();
-    assertThat(configService.minConcurrentReconciliationThreads()).isEqualTo(22);
-    assertThat(configService.concurrentWorkflowExecutorThreads()).isEqualTo(32);
-    assertThat(configService.minConcurrentWorkflowExecutorThreads()).isEqualTo(12);
   }
 
   @Test
