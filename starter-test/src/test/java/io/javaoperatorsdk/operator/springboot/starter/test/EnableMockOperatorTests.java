@@ -1,6 +1,7 @@
 package io.javaoperatorsdk.operator.springboot.starter.test;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.Operator;
+import io.javaoperatorsdk.operator.api.config.ConfigurationService;
+import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.springboot.starter.OperatorConfigurationProperties;
 import io.javaoperatorsdk.operator.springboot.starter.ReconcilerProperties;
@@ -75,17 +78,24 @@ class EnableMockOperatorTests {
     client.namespaces().resource(namespace(testNS)).create();
     assertNotNull(client.namespaces().withName(testNS).get());
     // create a CR
+    String name = "test-name";
     client.resources(CustomService.class).inNamespace(testNS)
-        .resource(customService("test-name", "test-label"))
+        .resource(customService(name, "test-label"))
         .create();
     assertNotNull(client.resources(CustomService.class).inNamespace(testNS)
         .withName("test-name").get());
     // test if a service was created by the CustomServiceReconciler
     await()
         .atMost(15, TimeUnit.SECONDS)
-        .untilAsserted(
-            () -> assertNotNull(
-                client.resources(Service.class).inNamespace(testNS).withName("test-name").get()));
+        .untilAsserted(() -> {
+          assertNotNull(
+              client.resources(Service.class).inNamespace(testNS).withName("test-name").get());
+          assertThat(client.configMaps().inNamespace(testNS).withName(name + "-config").get())
+              .isNotNull().satisfies(configMap -> {
+                assertThat(configMap.getData()).isNotNull();
+                assertThat(configMap.getData()).containsEntry("foo", "bar");
+              });
+        });
   }
 
   private Namespace namespace(String ns) {
@@ -122,6 +132,18 @@ class EnableMockOperatorTests {
     @Primary
     CustomServiceReconciler customServiceReconciler(KubernetesClient kubernetesClient) {
       return new CustomServiceReconciler(kubernetesClient);
+    }
+
+    /**
+     * Since operator-framework 4.4 the default for SSA (Server-Side-Apply) is set to true, which
+     * causes a problem when working with dependent resources. To disable SSA, we have to provide a
+     * custom ConfigurationServiceOverrider.
+     *
+     * @see ConfigurationService#ssaBasedCreateUpdateMatchForDependentResources()
+     */
+    @Bean
+    public Consumer<ConfigurationServiceOverrider> additionalConfigServiceOverrider() {
+      return overrider -> overrider.withSSABasedCreateUpdateMatchForDependentResources(false);
     }
   }
 }
