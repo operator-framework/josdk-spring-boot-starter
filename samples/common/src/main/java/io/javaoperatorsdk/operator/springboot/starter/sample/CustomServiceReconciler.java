@@ -12,9 +12,12 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
+import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
 
 /** A very simple sample controller that creates a service with a label. */
-@ControllerConfiguration
+@ControllerConfiguration(dependents = {
+    @Dependent(name = "config", type = ConfigMapDpendentResource.class)
+})
 public class CustomServiceReconciler implements Reconciler<CustomService> {
 
   private static final Logger log = LoggerFactory.getLogger(CustomServiceReconciler.class);
