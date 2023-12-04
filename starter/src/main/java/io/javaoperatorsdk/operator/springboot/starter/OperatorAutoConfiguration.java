@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -88,7 +89,7 @@ public class OperatorAutoConfiguration {
   @ConditionalOnMissingBean(Operator.class)
   public Operator operator(
       BiConsumer<Operator, Reconciler<?>> reconcilerRegisterer,
-      Consumer<ConfigurationServiceOverrider> compositeConfigurationServiceOverrider,
+      @Qualifier("compositeConfigurationServiceOverrider") Consumer<ConfigurationServiceOverrider> compositeConfigurationServiceOverrider,
       KubernetesClient kubernetesClient,
       List<Reconciler<?>> reconcilers) {
 
