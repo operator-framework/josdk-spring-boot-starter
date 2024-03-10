@@ -49,6 +49,7 @@
       <groupId>io.javaoperatorsdk</groupId>
       <artifactId>operator-framework-spring-boot-starter-samples-common</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.fabric8</groupId>
