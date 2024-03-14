@@ -27,7 +27,6 @@ jobs:
           cache: 'maven'
       - name: Check code format
         run: |
-          ./mvnw ${MAVEN_ARGS} formatter:validate -Dconfigfile=$PWD/contributing/eclipse-google-style.xml --file pom.xml
-          ./mvnw ${MAVEN_ARGS} impsort:check --file pom.xml
+          ./mvnw ${MAVEN_ARGS} spotless:check --file pom.xml
       - name: Run unit tests
         run: ./mvnw ${MAVEN_ARGS} -B test --file pom.xml

@@ -1,40 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <artifactId>operator-framework-spring-boot-starter-samples-parent</artifactId>
-        <groupId>io.javaoperatorsdk</groupId>
-        <version>5.4.2-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>io.javaoperatorsdk</groupId>
+    <artifactId>operator-framework-spring-boot-starter-samples-parent</artifactId>
+    <version>5.4.2-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>operator-framework-spring-boot-starter-samples-common</artifactId>
-    <name>Java Operator SDK Spring Boot Starter - Samples - Common</name>
-    <description>Common artefacts for samples and tests</description>
-    <packaging>jar</packaging>
+  <artifactId>operator-framework-spring-boot-starter-samples-common</artifactId>
+  <packaging>jar</packaging>
+  <name>Java Operator SDK Spring Boot Starter - Samples - Common</name>
+  <description>Common artefacts for samples and tests</description>
 
-    <dependencies>
-        <dependency>
-            <groupId>io.javaoperatorsdk</groupId>
-            <artifactId>operator-framework</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.fabric8</groupId>
-            <artifactId>crd-generator-apt</artifactId>
-            <scope>compile</scope>
-            <version>${fabric8-client.version}</version>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>io.javaoperatorsdk</groupId>
+      <artifactId>operator-framework</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.fabric8</groupId>
+      <artifactId>crd-generator-apt</artifactId>
+      <version>${fabric8-client.version}</version>
+      <scope>compile</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j2-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-        </dependency>
-    </dependencies>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+    </dependency>
+  </dependencies>
 
 </project>
