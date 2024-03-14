@@ -52,9 +52,6 @@
         <surefire.version>3.2.5</surefire.version>
         <fabric8-client.version>6.10.0</fabric8-client.version>
         <jenvtest.version>0.9.7</jenvtest.version>
-        <formatter-maven-plugin.version>2.23.0</formatter-maven-plugin.version>
-        <directory-maven-plugin.version>1.0</directory-maven-plugin.version>
-        <impsort-maven-plugin.version>1.9.0</impsort-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>3.2.0</maven-gpg-plugin.version>
