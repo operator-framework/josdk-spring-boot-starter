@@ -45,6 +45,7 @@ public class CustomServiceReconciler implements Reconciler<CustomService> {
     var service = new ServiceBuilder()
         .withNewMetadata()
         .withName(resource.getSpec().getName())
+        .withNamespace(resource.getMetadata().getNamespace())
         .addToLabels("testLabel", resource.getSpec().getLabel())
         .endMetadata()
         .withSpec(serviceSpec)
