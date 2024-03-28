@@ -4,7 +4,7 @@
 
   <groupId>io.javaoperatorsdk</groupId>
   <artifactId>operator-framework-spring-boot-starter-parent</artifactId>
-  <version>5.4.2-SNAPSHOT</version>
+  <version>5.4.3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Java Operator SDK Spring Boot Starter - Parent</name>
   <description>Spring Boot Starter for Java Operator SDK</description>
