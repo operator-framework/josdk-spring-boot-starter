@@ -61,7 +61,7 @@
     <spring-boot.version>3.2.4</spring-boot.version>
     <josdk.version>4.8.3</josdk.version>
     <surefire.version>3.2.5</surefire.version>
-    <fabric8-client.version>6.11.0</fabric8-client.version>
+    <fabric8-client.version>6.12.1</fabric8-client.version>
     <jenvtest.version>0.9.7</jenvtest.version>
     <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
     <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
