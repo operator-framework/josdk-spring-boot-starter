@@ -65,7 +65,7 @@
     <jenvtest.version>0.9.7</jenvtest.version>
     <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
     <maven-javadoc-plugin.version>3.7.0</maven-javadoc-plugin.version>
-    <maven-gpg-plugin.version>3.2.6</maven-gpg-plugin.version>
+    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
     <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
   </properties>
 
