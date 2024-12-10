@@ -20,9 +20,8 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesCrudDispatcher;
 import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.mockwebserver.Context;
+import io.fabric8.mockwebserver.MockWebServer;
 import io.javaoperatorsdk.operator.springboot.starter.OperatorAutoConfiguration;
-
-import 	io.fabric8.mockwebserver.MockWebServer;
 
 @Configuration
 @ImportAutoConfiguration(OperatorAutoConfiguration.class)

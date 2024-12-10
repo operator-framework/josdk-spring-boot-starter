@@ -95,11 +95,13 @@ public class AutoConfigurationTest {
         .satisfies(controller -> {
           assertThat((ControllerConfiguration<?>) controller.getConfiguration())
               .satisfies(config -> {
-                assertThat(config.getInformerConfig().getNamespaces()).containsExactlyInAnyOrder("ns1", "ns2");
+                assertThat(config.getInformerConfig().getNamespaces())
+                    .containsExactlyInAnyOrder("ns1", "ns2");
                 assertThat(config.isGenerationAware()).isTrue();
                 assertThat(config.getName()).isEqualTo("not-a-test-reconciler");
                 assertThat(config.getFinalizerName()).isEqualTo("barton.fink/1991");
-                assertThat(config.getInformerConfig().getLabelSelector()).isEqualTo("version in (v1)");
+                assertThat(config.getInformerConfig().getLabelSelector())
+                    .isEqualTo("version in (v1)");
                 assertThat(config.maxReconciliationInterval()).hasValue(Duration.ofMinutes(3));
               });
           assertThat(controller.getConfiguration().getRetry())

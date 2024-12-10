@@ -11,8 +11,7 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernete
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 
 @KubernetesDependent(
-    informer = @Informer(labelSelector = "app.kubernetes.io/managed-by=custom-service-operator")
-)
+    informer = @Informer(labelSelector = "app.kubernetes.io/managed-by=custom-service-operator"))
 public class ConfigMapDependentResource
     extends CRUDKubernetesDependentResource<ConfigMap, CustomService> {
   public ConfigMapDependentResource() {
