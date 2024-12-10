@@ -26,7 +26,11 @@ import io.fabric8.kubernetes.client.http.HttpClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.ReconcilerUtils;
-import io.javaoperatorsdk.operator.api.config.*;
+import io.javaoperatorsdk.operator.api.config.Cloner;
+import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
+import io.javaoperatorsdk.operator.api.config.ControllerConfigurationOverrider;
+import io.javaoperatorsdk.operator.api.config.DefaultResourceClassResolver;
+import io.javaoperatorsdk.operator.api.config.ResourceClassResolver;
 import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
@@ -93,7 +97,7 @@ public class OperatorAutoConfiguration {
       KubernetesClient kubernetesClient,
       List<Reconciler<?>> reconcilers) {
 
-    var operator = new Operator(kubernetesClient, compositeConfigurationServiceOverrider);
+    var operator = new Operator(compositeConfigurationServiceOverrider);
     reconcilers.forEach(reconciler -> reconcilerRegisterer.accept(operator, reconciler));
 
     return operator;
@@ -122,14 +126,9 @@ public class OperatorAutoConfiguration {
   @Order(0)
   public Consumer<ConfigurationServiceOverrider> defaultConfigServiceOverrider(
       @Autowired(required = false) Cloner cloner,
-      ResourceClassResolver resourceClassResolver,
-      Metrics metrics) {
+      Metrics metrics, KubernetesClient kubernetesClient) {
     return overrider -> {
       doIfPresent(cloner, overrider::withResourceCloner);
-      doIfPresent(configuration.getMinConcurrentWorkflowExecutorThreads(),
-          overrider::withMinConcurrentWorkflowExecutorThreads);
-      doIfPresent(configuration.getMinConcurrentReconciliationThreads(),
-          overrider::withMinConcurrentReconciliationThreads);
       doIfPresent(configuration.getStopOnInformerErrorDuringStartup(),
           overrider::withStopOnInformerErrorDuringStartup);
       doIfPresent(configuration.getConcurrentWorkflowExecutorThreads(),
@@ -139,8 +138,8 @@ public class OperatorAutoConfiguration {
       overrider
           .withConcurrentReconciliationThreads(configuration.getConcurrentReconciliationThreads())
           .withMetrics(metrics)
-          .withResourceClassResolver(resourceClassResolver)
-          .checkingCRDAndValidateLocalModel(configuration.getCheckCrdAndValidateLocalModel());
+          .checkingCRDAndValidateLocalModel(configuration.getCheckCrdAndValidateLocalModel())
+          .withKubernetesClient(kubernetesClient);
     };
   }
 
