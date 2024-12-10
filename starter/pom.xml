@@ -115,5 +115,11 @@
       <artifactId>jenvtest-fabric8-client-support</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>${jetbrains-annotations.version}</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 </project>

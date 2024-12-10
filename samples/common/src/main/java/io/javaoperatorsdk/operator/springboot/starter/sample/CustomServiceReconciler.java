@@ -15,9 +15,10 @@ import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
 
 /** A very simple sample controller that creates a service with a label. */
-@ControllerConfiguration(dependents = {
-    @Dependent(name = "config", type = ConfigMapDpendentResource.class)
+@Workflow(dependents = {
+    @Dependent(name = "config", type = ConfigMapDependentResource.class)
 })
+@ControllerConfiguration
 public class CustomServiceReconciler implements Reconciler<CustomService> {
 
   private static final Logger log = LoggerFactory.getLogger(CustomServiceReconciler.class);
@@ -57,6 +58,6 @@ public class CustomServiceReconciler implements Reconciler<CustomService> {
         .inNamespace(resource.getMetadata().getNamespace())
         .createOrReplace(service);
 
-    return UpdateControl.updateResource(resource);
+    return UpdateControl.patchResource(resource);
   }
 }

@@ -22,7 +22,7 @@ import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.mockwebserver.Context;
 import io.javaoperatorsdk.operator.springboot.starter.OperatorAutoConfiguration;
 
-import okhttp3.mockwebserver.MockWebServer;
+import 	io.fabric8.mockwebserver.MockWebServer;
 
 @Configuration
 @ImportAutoConfiguration(OperatorAutoConfiguration.class)
