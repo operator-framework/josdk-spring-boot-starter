@@ -7,7 +7,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -27,7 +26,7 @@ public interface CRDApplier {
   void apply();
 
   interface CRDTransformer extends UnaryOperator<HasMetadata> {
-    default CRDTransformer thenTransform(@NotNull CRDApplier.CRDTransformer after) {
+    default CRDTransformer thenTransform(CRDApplier.CRDTransformer after) {
       return t -> after.apply(apply(t));
     }
 
