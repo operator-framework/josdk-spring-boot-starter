@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.Operator;
@@ -41,7 +41,7 @@ public class AutoConfigurationTest {
   @Autowired
   private OperatorConfigurationProperties config;
 
-  @SpyBean
+  @MockitoSpyBean
   private Operator operator;
 
   @Autowired
@@ -53,7 +53,7 @@ public class AutoConfigurationTest {
   @Autowired
   private Consumer<ConfigurationServiceOverrider> compositeConfigurationServiceOverrider;
 
-  @MockBean
+  @MockitoBean
   private Cloner cloner;
 
   @Test
