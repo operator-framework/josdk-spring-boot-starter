@@ -1,23 +1,21 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
-import java.io.File;
-import java.io.FileInputStream;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.joining;
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.client.KubernetesClient;
-
-import static java.util.Arrays.stream;
-import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.joining;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @FunctionalInterface
 public interface CRDApplier {
@@ -58,23 +56,21 @@ public interface CRDApplier {
     @Override
     public void apply() {
       log.debug("Uploading CRDs with suffix {} under {}", crdSuffix, crdPath);
-      stream(findFiles()).forEach(this::applyCrd);
+      stream(findResources()).forEach(this::applyCrd);
     }
 
-    private File[] findFiles() {
-      var resource = requireNonNull(
-          getClass().getResource(crdPath),
-          "Could not find the configured CRD path");
-
+    private Resource[] findResources() {
+      final var resourceResolver = new PathMatchingResourcePatternResolver();
+      final var resourceLocationPattern = crdPath + '*' + crdSuffix;
       try {
-        return new File(resource.toURI()).listFiles((ignored, name) -> name.endsWith(crdSuffix));
-      } catch (URISyntaxException e) {
-        throw new RuntimeException(e);
+        return resourceResolver.getResources(resourceLocationPattern);
+      } catch (IOException e) {
+        throw new RuntimeException("could not find CRD resources from the location pattern: " + resourceLocationPattern);
       }
     }
 
-    private void applyCrd(File crdFile) {
-      try (var is = new FileInputStream(crdFile)) {
+    private void applyCrd(Resource crdResource) {
+      try (var is = crdResource.getInputStream()) {
         var crds = kubernetesClient.load(is).items().stream().map(crdTransformer).toList();
         kubernetesClient.resourceList(crds).createOrReplace();
 

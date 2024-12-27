@@ -16,7 +16,6 @@ import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.DefaultCRDAppli
 import io.javaoperatorsdk.operator.springboot.starter.model.TestResource;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -61,15 +60,4 @@ class CRDApplierTest {
 
     verifyNoInteractions(kubernetesClient);
   }
-
-  @Test
-  void shouldThrowWhenBadPath() {
-    crdPath = "badPath";
-    assertThatThrownBy(() -> applier().apply())
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("Could not find the configured CRD path");
-
-    verifyNoInteractions(kubernetesClient);
-  }
-
 }
