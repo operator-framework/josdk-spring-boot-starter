@@ -1,9 +1,5 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.joining;
-import static org.slf4j.LoggerFactory.getLogger;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -16,6 +12,10 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.client.KubernetesClient;
+
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.joining;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @FunctionalInterface
 public interface CRDApplier {
@@ -65,7 +65,8 @@ public interface CRDApplier {
       try {
         return resourceResolver.getResources(resourceLocationPattern);
       } catch (IOException e) {
-        throw new RuntimeException("could not find CRD resources from the location pattern: " + resourceLocationPattern);
+        throw new RuntimeException(
+            "could not find CRD resources from the location pattern: " + resourceLocationPattern);
       }
     }
 
