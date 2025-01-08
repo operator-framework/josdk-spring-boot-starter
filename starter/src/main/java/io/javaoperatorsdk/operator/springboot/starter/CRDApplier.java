@@ -1,6 +1,7 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -61,7 +62,7 @@ public interface CRDApplier {
 
     private Resource[] findResources() {
       final var resourceResolver = new PathMatchingResourcePatternResolver();
-      final var resourceLocationPattern = crdPath + '*' + crdSuffix;
+      final var resourceLocationPattern = Paths.get(crdPath, '*' + crdSuffix).toString();
       try {
         return resourceResolver.getResources(resourceLocationPattern);
       } catch (IOException e) {
