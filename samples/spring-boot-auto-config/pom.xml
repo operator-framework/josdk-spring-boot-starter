@@ -18,6 +18,11 @@
       <groupId>io.javaoperatorsdk</groupId>
       <artifactId>operator-framework-spring-boot-starter</artifactId>
     </dependency>
+    <!-- without this, the app exits after 1 minute  -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.javaoperatorsdk</groupId>
       <artifactId>operator-framework-spring-boot-starter-samples-common</artifactId>
