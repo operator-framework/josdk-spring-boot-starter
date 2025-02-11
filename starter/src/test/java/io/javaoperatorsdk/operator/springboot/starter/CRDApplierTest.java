@@ -11,9 +11,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.NamespaceListVisitFromServerGetDeleteRecreateWaitApplicable;
-import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.CRDTransformer;
-import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.DefaultCRDApplier;
+import io.javaoperatorsdk.operator.springboot.starter.crd.CRDApplier;
+import io.javaoperatorsdk.operator.springboot.starter.crd.CRDTransformer;
+import io.javaoperatorsdk.operator.springboot.starter.crd.DefaultCRDApplier;
 import io.javaoperatorsdk.operator.springboot.starter.model.TestResource;
+import io.javaoperatorsdk.operator.springboot.starter.properties.CrdProperties;
+import io.javaoperatorsdk.operator.springboot.starter.properties.OperatorConfigurationProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,7 +38,12 @@ class CRDApplierTest {
   private String crdPath = "/META-INF/fabric8/";
 
   private CRDApplier applier() {
-    return new DefaultCRDApplier(kubernetesClient, crdTransformers, crdPath, crdSuffix);
+    var props = new OperatorConfigurationProperties();
+    var crd = new CrdProperties();
+    crd.setPath(crdPath);
+    crd.setSuffix(crdSuffix);
+    props.setCrd(crd);
+    return new DefaultCRDApplier(kubernetesClient, props, crdTransformers);
   }
 
   @Test
