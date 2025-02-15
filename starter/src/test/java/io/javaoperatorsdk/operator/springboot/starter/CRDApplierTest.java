@@ -35,7 +35,7 @@ class CRDApplierTest {
   @Mock
   private NamespaceListVisitFromServerGetDeleteRecreateWaitApplicable<HasMetadata> loadedResource;
   private String crdSuffix = "-v2.yml";
-  private String crdPath = "/META-INF/fabric8/";
+  private final String crdPath = "/META-INF/fabric8/";
 
   private CRDApplier applier() {
     var props = new OperatorConfigurationProperties();

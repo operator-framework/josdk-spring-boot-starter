@@ -16,8 +16,10 @@ public class ReconcilerRegistrationUtil {
   public static List<DependentResourceConfigurator> filterConfigurators(Reconciler<?> reconciler,
       Map<String, List<DependentResourceConfigurator>> configuratorsMap) {
     var workflow = reconciler.getClass().getAnnotation(Workflow.class);
-    if (workflow == null)
+    if (workflow == null) {
       return Collections.emptyList();
+    }
+
     var dependents = workflow.dependents();
     ArrayList<DependentResourceConfigurator> relevant = new ArrayList<>();
     for (Dependent dependent : dependents) {
