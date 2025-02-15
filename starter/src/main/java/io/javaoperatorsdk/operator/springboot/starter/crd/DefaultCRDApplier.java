@@ -15,25 +15,21 @@ import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.springboot.starter.properties.OperatorConfigurationProperties;
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
-
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @ConditionalOnProperty(value = "javaoperatorsdk.crd.apply-on-startup", havingValue = "true")
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DefaultCRDApplier implements CRDApplier {
 
   private static final Logger log = getLogger(DefaultCRDApplier.class);
   private static final int CRD_READY_WAIT = 2000;
 
-  KubernetesClient kubernetesClient;
-  CRDTransformer crdTransformer;
-  String crdSuffix;
-  String crdPath;
+  private final KubernetesClient kubernetesClient;
+  private final CRDTransformer crdTransformer;
+  private final String crdSuffix;
+  private final String crdPath;
 
   public DefaultCRDApplier(KubernetesClient kubernetesClient,
       OperatorConfigurationProperties configurationProperties, List<CRDTransformer> transformers) {

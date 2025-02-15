@@ -10,19 +10,20 @@ import org.springframework.stereotype.Component;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.springboot.starter.crd.CRDApplier;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 
 @Component
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OperatorStarter {
 
   private static final Logger log = LoggerFactory.getLogger(OperatorStarter.class);
 
-  Operator operator;
-  CRDApplier crdApplier;
+  private final Operator operator;
+  private final CRDApplier crdApplier;
+
+
+  public OperatorStarter(Operator operator, CRDApplier crdApplier) {
+    this.operator = operator;
+    this.crdApplier = crdApplier;
+  }
 
   @EventListener
   public void start(ApplicationReadyEvent event) {

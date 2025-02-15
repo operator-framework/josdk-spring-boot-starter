@@ -1,20 +1,38 @@
 package io.javaoperatorsdk.operator.springboot.starter.properties;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.experimental.FieldDefaults;
-
-@Data
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CrdProperties {
 
-  boolean applyOnStartup;
+  private boolean applyOnStartup;
   /**
    * path to the resource folder where CRDs are located
    */
-  String path = "/META-INF/fabric8/";
+  private String path = "/META-INF/fabric8/";
   /**
    * file suffix to filter out CRDs
    */
-  String suffix = "-v1.yml";
+  private String suffix = "-v1.yml";
+
+  public boolean isApplyOnStartup() {
+    return applyOnStartup;
+  }
+
+  public void setApplyOnStartup(boolean applyOnStartup) {
+    this.applyOnStartup = applyOnStartup;
+  }
+
+  public String getPath() {
+    return path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
+  }
+
+  public String getSuffix() {
+    return suffix;
+  }
+
+  public void setSuffix(String suffix) {
+    this.suffix = suffix;
+  }
 }
