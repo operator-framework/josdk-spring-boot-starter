@@ -15,5 +15,5 @@ Reconciler properties [here](./starter/src/main/java/io/javaoperatorsdk/operator
 ## Overriding default implementation
 
 You can provide own implementation instead of the by default provided beans,
-life for the [Fabric8 client](https://github.com/operator-framework/josdk-spring-boot-starter/blob/main/starter/src/main/java/io/javaoperatorsdk/operator/springboot/starter/OperatorAutoConfiguration.java#L51)
+life for the [Fabric8 client](https://github.com/operator-framework/josdk-spring-boot-starter/blob/main/starter/src/main/java/io/javaoperatorsdk/operator/springboot/starter/OperatorAutoConfiguration.java#L50)
 but also the [Operator instance](https://github.com/operator-framework/josdk-spring-boot-starter/blob/main/starter/src/main/java/io/javaoperatorsdk/operator/springboot/starter/OperatorAutoConfiguration.java#L94).
