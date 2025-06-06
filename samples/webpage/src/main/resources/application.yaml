@@ -1,0 +1,9 @@
+javaoperatorsdk:
+  reconcilers:
+    webpage:
+      retry:
+        maxAttempts: 3
+
+logging:
+  level:
+    io.javaoperatorsdk: INFO

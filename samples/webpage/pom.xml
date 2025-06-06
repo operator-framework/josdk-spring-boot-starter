@@ -8,15 +8,26 @@
     <version>6.1.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>operator-framework-spring-boot-starter-samples-auto-configuration</artifactId>
+  <artifactId>operator-framework-spring-boot-starter-samples-webpage</artifactId>
   <packaging>jar</packaging>
-  <name>Java Operator SDK Spring Boot Starter - Samples - Auto Configuration</name>
-  <description>Webapp Sample with Spring Boot</description>
+  <name>Java Operator SDK Spring Boot Starter - Samples - WebPage</name>
+  <description>Sample usage with Spring Boot</description>
 
   <dependencies>
     <dependency>
       <groupId>io.javaoperatorsdk</groupId>
       <artifactId>operator-framework-spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.javaoperatorsdk</groupId>
+      <artifactId>operator-framework</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.fabric8</groupId>
+      <artifactId>crd-generator-apt</artifactId>
+      <version>${fabric8-client.version}</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
