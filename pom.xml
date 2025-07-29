@@ -161,7 +161,7 @@
               <include>pom.xml</include>
               <inclide>./**/pom.xml</inclide>
             </includes>
-            <sortPom></sortPom>
+            <sortPom/>
           </pom>
           <java>
             <eclipse>
@@ -170,7 +170,7 @@
             <importOrder>
               <file>contributing/eclipse.importorder</file>
             </importOrder>
-            <removeUnusedImports></removeUnusedImports>
+            <removeUnusedImports/>
           </java>
         </configuration>
       </plugin>
