@@ -52,7 +52,7 @@
     <maven.compiler.release>17</maven.compiler.release>
     <spotless.version>2.46.1</spotless.version>
     <josdk.version>5.1.2</josdk.version>
-    <spring-boot.version>3.5.4</spring-boot.version>
+    <spring-boot.version>3.5.5</spring-boot.version>
     <surefire.version>3.5.3</surefire.version>
     <fabric8-client.version>7.3.1</fabric8-client.version>
     <jenvtest.version>0.9.7</jenvtest.version>
