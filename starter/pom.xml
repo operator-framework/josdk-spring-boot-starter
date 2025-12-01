@@ -57,6 +57,16 @@
       <artifactId>spring-boot-actuator-autoconfigure</artifactId>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-health</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-jackson2</artifactId>
+      <optional>true</optional>
+    </dependency>
     <!-- without this, the app exits after 1 minute  -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
