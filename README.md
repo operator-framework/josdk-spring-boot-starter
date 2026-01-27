@@ -1,6 +1,6 @@
 # Spring Boot Starter for Java Operator SDK
 
-Supports Spring Boot 3.x
+Supports Spring Boot 4.x
 
 ## Getting Started
 
