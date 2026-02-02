@@ -61,7 +61,7 @@ public interface CRDApplier {
 
     private Resource[] findResources() {
       final var resourceResolver = new PathMatchingResourcePatternResolver();
-      final var resourceLocationPattern = Paths.get(crdPath, '*' + crdSuffix).toString();
+      final var resourceLocationPattern = Paths.get(crdPath) + "/*" + crdSuffix;
       try {
         return resourceResolver.getResources(resourceLocationPattern);
       } catch (IOException e) {
