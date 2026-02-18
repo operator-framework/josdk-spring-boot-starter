@@ -55,7 +55,7 @@
     <spring-boot.version>4.0.2</spring-boot.version>
     <surefire.version>3.5.4</surefire.version>
     <fabric8-client.version>7.5.2</fabric8-client.version>
-    <junit.version>6.0.2</junit.version>
+    <junit.version>6.0.3</junit.version>
     <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
     <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
     <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
