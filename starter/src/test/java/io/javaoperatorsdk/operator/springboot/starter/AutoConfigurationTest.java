@@ -16,7 +16,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.Operator;
-import io.javaoperatorsdk.operator.ReconcilerUtils;
+import io.javaoperatorsdk.operator.ReconcilerUtilsInternal;
 import io.javaoperatorsdk.operator.api.config.Cloner;
 import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
 import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
@@ -68,7 +68,8 @@ public class AutoConfigurationTest {
   @Test
   public void loadsRetryPropertiesProperly() {
     final var retryProperties =
-        config.getReconcilers().get(ReconcilerUtils.getNameFor(TestReconciler.class)).getRetry();
+        config.getReconcilers().get(ReconcilerUtilsInternal.getNameFor(TestReconciler.class))
+            .getRetry();
     assertEquals(3, retryProperties.getMaxAttempts());
     assertEquals(1000, retryProperties.getInitialInterval());
     assertEquals(1.5, retryProperties.getIntervalMultiplier());

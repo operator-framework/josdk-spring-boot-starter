@@ -10,7 +10,7 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDep
 import io.javaoperatorsdk.operator.springboot.starter.sample.webpage.Utils;
 import io.javaoperatorsdk.operator.springboot.starter.sample.webpage.customresource.WebPage;
 
-import static io.javaoperatorsdk.operator.ReconcilerUtils.loadYaml;
+import static io.javaoperatorsdk.operator.ReconcilerUtilsInternal.loadYaml;
 import static io.javaoperatorsdk.operator.springboot.starter.sample.webpage.Utils.deploymentName;
 import static io.javaoperatorsdk.operator.springboot.starter.sample.webpage.Utils.serviceName;
 import static io.javaoperatorsdk.operator.springboot.starter.sample.webpage.WebPageManagedDependentsReconciler.SELECTOR;
