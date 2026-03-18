@@ -26,7 +26,7 @@ import io.fabric8.kubernetes.client.http.HttpClient;
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.javaoperatorsdk.operator.Operator;
-import io.javaoperatorsdk.operator.ReconcilerUtils;
+import io.javaoperatorsdk.operator.ReconcilerUtilsInternal;
 import io.javaoperatorsdk.operator.api.config.Cloner;
 import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
 import io.javaoperatorsdk.operator.api.config.ControllerConfigurationOverrider;
@@ -121,7 +121,7 @@ public class OperatorAutoConfiguration {
   @Bean
   public BiConsumer<Operator, Reconciler<?>> reconcilerRegisterer() {
     return (operator, reconciler) -> {
-      var name = ReconcilerUtils.getNameFor(reconciler);
+      var name = ReconcilerUtilsInternal.getNameFor(reconciler);
       var props = configuration.getReconcilers().get(name);
 
       operator.register(reconciler, overrider -> overrideFromProps(overrider, props));
