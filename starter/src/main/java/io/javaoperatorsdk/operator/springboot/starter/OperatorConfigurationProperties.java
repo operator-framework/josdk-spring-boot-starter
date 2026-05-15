@@ -23,6 +23,10 @@ public class OperatorConfigurationProperties {
   private Boolean closeClientOnStop;
   private Boolean stopOnInformerErrorDuringStartup;
   private Duration cacheSyncTimeout;
+  private Duration reconciliationTerminationTimeout;
+  private Boolean ssaBasedCreateUpdateMatchForDependentResources;
+  private Boolean useSSAToPatchPrimaryResource;
+  private Boolean cloneSecondaryResourcesWhenGettingFromCache;
 
   public KubernetesClientProperties getClient() {
     return client;
@@ -103,6 +107,41 @@ public class OperatorConfigurationProperties {
 
   public void setCacheSyncTimeout(Duration cacheSyncTimeout) {
     this.cacheSyncTimeout = cacheSyncTimeout;
+  }
+
+  public Duration getReconciliationTerminationTimeout() {
+    return reconciliationTerminationTimeout;
+  }
+
+  public void setReconciliationTerminationTimeout(Duration reconciliationTerminationTimeout) {
+    this.reconciliationTerminationTimeout = reconciliationTerminationTimeout;
+  }
+
+  public Boolean getSsaBasedCreateUpdateMatchForDependentResources() {
+    return ssaBasedCreateUpdateMatchForDependentResources;
+  }
+
+  public void setSsaBasedCreateUpdateMatchForDependentResources(
+      Boolean ssaBasedCreateUpdateMatchForDependentResources) {
+    this.ssaBasedCreateUpdateMatchForDependentResources =
+        ssaBasedCreateUpdateMatchForDependentResources;
+  }
+
+  public Boolean getUseSSAToPatchPrimaryResource() {
+    return useSSAToPatchPrimaryResource;
+  }
+
+  public void setUseSSAToPatchPrimaryResource(Boolean useSSAToPatchPrimaryResource) {
+    this.useSSAToPatchPrimaryResource = useSSAToPatchPrimaryResource;
+  }
+
+  public Boolean getCloneSecondaryResourcesWhenGettingFromCache() {
+    return cloneSecondaryResourcesWhenGettingFromCache;
+  }
+
+  public void setCloneSecondaryResourcesWhenGettingFromCache(
+      Boolean cloneSecondaryResourcesWhenGettingFromCache) {
+    this.cloneSecondaryResourcesWhenGettingFromCache = cloneSecondaryResourcesWhenGettingFromCache;
   }
 
   public CrdProperties getCrd() {
