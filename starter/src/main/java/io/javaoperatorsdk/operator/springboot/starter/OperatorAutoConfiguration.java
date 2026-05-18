@@ -150,6 +150,14 @@ public class OperatorAutoConfiguration {
           overrider::withConcurrentWorkflowExecutorThreads);
       doIfPresent(configuration.getCloseClientOnStop(), overrider::withCloseClientOnStop);
       doIfPresent(configuration.getCacheSyncTimeout(), overrider::withCacheSyncTimeout);
+      doIfPresent(configuration.getReconciliationTerminationTimeout(),
+          overrider::withReconciliationTerminationTimeout);
+      doIfPresent(configuration.getSsaBasedCreateUpdateMatchForDependentResources(),
+          overrider::withSSABasedCreateUpdateMatchForDependentResources);
+      doIfPresent(configuration.getUseSSAToPatchPrimaryResource(),
+          overrider::withUseSSAToPatchPrimaryResource);
+      doIfPresent(configuration.getCloneSecondaryResourcesWhenGettingFromCache(),
+          overrider::withCloneSecondaryResourcesWhenGettingFromCache);
       overrider
           .withConcurrentReconciliationThreads(configuration.getConcurrentReconciliationThreads())
           .withMetrics(metrics)
@@ -180,6 +188,10 @@ public class OperatorAutoConfiguration {
       });
       doIfPresent(props.getLabelSelector(), overrider::withLabelSelector);
       doIfPresent(props.getReconciliationMaxInterval(), overrider::withReconciliationMaxInterval);
+      doIfPresent(props.getFieldManager(), overrider::withFieldManager);
+      doIfPresent(props.isTriggerReconcilerOnAllEvents(),
+          overrider::withTriggerReconcilerOnAllEvents);
+      doIfPresent(props.getInformerListLimit(), overrider::withInformerListLimit);
     }
   }
 

@@ -77,6 +77,46 @@ public class AutoConfigurationTest {
   }
 
   @Test
+  public void loadsOperatorLevelPropertiesProperly() {
+    assertThat(config.getCacheSyncTimeout()).isEqualTo(Duration.ofDays(17));
+    assertThat(config.getCloseClientOnStop()).isFalse();
+    assertThat(config.getStopOnInformerErrorDuringStartup()).isFalse();
+    assertThat(config.getCheckCrdAndValidateLocalModel()).isFalse();
+    assertThat(config.getConcurrentReconciliationThreads()).isEqualTo(60);
+    assertThat(config.getConcurrentWorkflowExecutorThreads()).isEqualTo(32);
+    assertThat(config.getReconciliationTerminationTimeout()).isEqualTo(Duration.ofSeconds(13));
+    assertThat(config.getSsaBasedCreateUpdateMatchForDependentResources()).isFalse();
+    assertThat(config.getUseSSAToPatchPrimaryResource()).isFalse();
+    assertThat(config.getCloneSecondaryResourcesWhenGettingFromCache()).isTrue();
+  }
+
+  @Test
+  public void loadsReconcilerLevelPropertiesProperly() {
+    var props =
+        config.getReconcilers().get(ReconcilerUtilsInternal.getNameFor(TestReconciler.class));
+    assertThat(props.getFieldManager()).isEqualTo("test-field-manager");
+    assertThat(props.isTriggerReconcilerOnAllEvents()).isTrue();
+    assertThat(props.getInformerListLimit()).isEqualTo(200L);
+  }
+
+  @Test
+  public void appliesOperatorLevelPropertiesToConfigurationService() {
+    var configurationService = operator.getConfigurationService();
+    assertThat(configurationService.cacheSyncTimeout()).isEqualTo(Duration.ofDays(17));
+    assertThat(configurationService.closeClientOnStop()).isFalse();
+    assertThat(configurationService.stopOnInformerErrorDuringStartup()).isFalse();
+    assertThat(configurationService.checkCRDAndValidateLocalModel()).isFalse();
+    assertThat(configurationService.concurrentWorkflowExecutorThreads()).isEqualTo(32);
+    assertThat(configurationService.reconciliationTerminationTimeout())
+        .isEqualTo(Duration.ofSeconds(13));
+    assertThat(configurationService.ssaBasedCreateUpdateMatchForDependentResources()).isFalse();
+    assertThat(configurationService.useSSAToPatchPrimaryResource()).isFalse();
+    assertThat(configurationService.cloneSecondaryResourcesWhenGettingFromCache()).isTrue();
+    assertThat(configurationService.concurrentReconciliationThreads())
+        .isEqualTo(CUSTOM_RECONCILE_THREADS);
+  }
+
+  @Test
   public void beansCreated() {
     assertNotNull(kubernetesClient);
     assertNotNull(compositeConfigurationServiceOverrider);
@@ -104,6 +144,9 @@ public class AutoConfigurationTest {
                 assertThat(config.getInformerConfig().getLabelSelector())
                     .isEqualTo("version in (v1)");
                 assertThat(config.maxReconciliationInterval()).hasValue(Duration.ofMinutes(3));
+                assertThat(config.fieldManager()).isEqualTo("test-field-manager");
+                assertThat(config.triggerReconcilerOnAllEvents()).isTrue();
+                assertThat(config.getInformerConfig().getInformerListLimit()).isEqualTo(200L);
               });
           assertThat(controller.getConfiguration().getRetry())
               .isInstanceOfSatisfying(GenericRetry.class, retry -> {

@@ -7,6 +7,10 @@ javaoperatorsdk:
   min-concurrent-reconciliation-threads: 22
   concurrent-workflow-executor-threads: 32
   min-concurrent-workflow-executor-threads: 12
+  reconciliation-termination-timeout: 13s
+  ssa-based-create-update-match-for-dependent-resources: false
+  use-SSA-to-patch-primary-resource: false
+  clone-secondary-resources-when-getting-from-cache: true
   crd:
     apply-on-startup: false
     path: /META-INF/fabric8/deeper
@@ -23,6 +27,9 @@ javaoperatorsdk:
       name: "not-a-test-reconciler"
       reconciliation-max-interval: 3m
       labelSelector: "version in (v1)"
+      field-manager: "test-field-manager"
+      trigger-reconciler-on-all-events: true
+      informer-list-limit: 200
       retry:
         maxAttempts: 3
         initialInterval: 1000

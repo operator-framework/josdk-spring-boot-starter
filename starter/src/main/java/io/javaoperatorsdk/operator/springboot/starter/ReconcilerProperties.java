@@ -12,6 +12,9 @@ public class ReconcilerProperties {
   private RetryProperties retry;
   private String labelSelector;
   private Duration reconciliationMaxInterval;
+  private String fieldManager;
+  private Boolean triggerReconcilerOnAllEvents;
+  private Long informerListLimit;
 
   public String getName() {
     return name;
@@ -75,5 +78,29 @@ public class ReconcilerProperties {
 
   public void setReconciliationMaxInterval(Duration reconciliationMaxInterval) {
     this.reconciliationMaxInterval = reconciliationMaxInterval;
+  }
+
+  public String getFieldManager() {
+    return fieldManager;
+  }
+
+  public void setFieldManager(String fieldManager) {
+    this.fieldManager = fieldManager;
+  }
+
+  public Boolean isTriggerReconcilerOnAllEvents() {
+    return triggerReconcilerOnAllEvents;
+  }
+
+  public void setTriggerReconcilerOnAllEvents(Boolean triggerReconcilerOnAllEvents) {
+    this.triggerReconcilerOnAllEvents = triggerReconcilerOnAllEvents;
+  }
+
+  public Long getInformerListLimit() {
+    return informerListLimit;
+  }
+
+  public void setInformerListLimit(Long informerListLimit) {
+    this.informerListLimit = informerListLimit;
   }
 }
