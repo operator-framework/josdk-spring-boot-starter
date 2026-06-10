@@ -208,6 +208,7 @@ public class OperatorAutoConfiguration {
   }
 
   @Bean
+  @ConditionalOnMissingBean(Config.class)
   public Config getClientConfiguration(
       @Autowired(required = false) KubernetesConfigCustomizer configCustomizer) {
     return configuration.getClient().getContext()
