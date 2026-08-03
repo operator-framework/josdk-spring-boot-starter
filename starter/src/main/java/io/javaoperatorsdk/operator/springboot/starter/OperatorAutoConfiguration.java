@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,6 +35,7 @@ import io.javaoperatorsdk.operator.api.config.DefaultResourceClassResolver;
 import io.javaoperatorsdk.operator.api.config.ResourceClassResolver;
 import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResourceFactory;
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
 import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.CRDTransformer;
 import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.DefaultCRDApplier;
@@ -164,6 +166,20 @@ public class OperatorAutoConfiguration {
           .checkingCRDAndValidateLocalModel(configuration.getCheckCrdAndValidateLocalModel())
           .withKubernetesClient(kubernetesClient);
     };
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(DependentResourceFactory.class)
+  public DependentResourceFactory<?, ?> dependentResourceFactory(
+      AutowireCapableBeanFactory beanFactory) {
+    return new SpringDependentResourceFactory(beanFactory);
+  }
+
+  @Bean
+  @Order(0)
+  public Consumer<ConfigurationServiceOverrider> dependentResourceFactoryConfigServiceOverrider(
+      DependentResourceFactory<?, ?> dependentResourceFactory) {
+    return overrider -> overrider.withDependentResourceFactory(dependentResourceFactory);
   }
 
   private void overrideFromProps(ControllerConfigurationOverrider<?> overrider,

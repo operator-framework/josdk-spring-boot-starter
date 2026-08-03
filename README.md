@@ -17,3 +17,8 @@ Reconciler properties [here](./starter/src/main/java/io/javaoperatorsdk/operator
 You can provide own implementation instead of the by default provided beans,
 life for the [Fabric8 client](https://github.com/operator-framework/josdk-spring-boot-starter/blob/main/starter/src/main/java/io/javaoperatorsdk/operator/springboot/starter/OperatorAutoConfiguration.java#L50)
 but also the [Operator instance](https://github.com/operator-framework/josdk-spring-boot-starter/blob/main/starter/src/main/java/io/javaoperatorsdk/operator/springboot/starter/OperatorAutoConfiguration.java#L94).
+
+By default, managed dependent resources are created through Spring's `AutowireCapableBeanFactory`, so they can
+receive Spring-managed dependencies (e.g. via constructor injection) instead of requiring a no-arg constructor.
+You can provide your own [DependentResourceFactory](https://github.com/operator-framework/josdk-spring-boot-starter/blob/main/starter/src/main/java/io/javaoperatorsdk/operator/springboot/starter/OperatorAutoConfiguration.java#L173)
+bean to override this default behavior.
