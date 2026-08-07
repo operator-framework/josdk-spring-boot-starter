@@ -9,9 +9,11 @@ import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -170,16 +172,23 @@ public class OperatorAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(DependentResourceFactory.class)
+  @ConditionalOnProperty(
+      prefix = "javaoperatorsdk.dependent-resources",
+      name = "spring-managed",
+      havingValue = "true",
+      matchIfMissing = true)
   public DependentResourceFactory<?, ?> dependentResourceFactory(
       AutowireCapableBeanFactory beanFactory) {
     return new SpringDependentResourceFactory(beanFactory);
   }
 
   @Bean
-  @Order(0)
+  @Order(1)
+  @ConditionalOnBean(DependentResourceFactory.class)
   public Consumer<ConfigurationServiceOverrider> dependentResourceFactoryConfigServiceOverrider(
-      DependentResourceFactory<?, ?> dependentResourceFactory) {
-    return overrider -> overrider.withDependentResourceFactory(dependentResourceFactory);
+      ObjectProvider<DependentResourceFactory<?, ?>> dependentResourceFactory) {
+    return overrider -> dependentResourceFactory
+        .ifAvailable(overrider::withDependentResourceFactory);
   }
 
   private void overrideFromProps(ControllerConfigurationOverrider<?> overrider,

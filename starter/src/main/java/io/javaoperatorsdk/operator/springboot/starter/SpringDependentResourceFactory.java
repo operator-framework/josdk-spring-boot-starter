@@ -17,8 +17,8 @@ import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResourceFac
  * dependent resource keeps the lifecycle expected by Java Operator SDK instead of becoming an
  * application-wide singleton.
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
-public class SpringDependentResourceFactory implements DependentResourceFactory {
+public class SpringDependentResourceFactory
+    implements DependentResourceFactory<ControllerConfiguration<?>, DependentResourceSpec> {
 
   private final AutowireCapableBeanFactory beanFactory;
 
@@ -28,7 +28,7 @@ public class SpringDependentResourceFactory implements DependentResourceFactory 
 
   @Override
   public DependentResource createFrom(DependentResourceSpec spec,
-      ControllerConfiguration controllerConfiguration) {
+      ControllerConfiguration<?> controllerConfiguration) {
     final DependentResource instance =
         (DependentResource) beanFactory.createBean(spec.getDependentResourceClass());
     configure(instance, spec, controllerConfiguration);
@@ -37,8 +37,18 @@ public class SpringDependentResourceFactory implements DependentResourceFactory 
 
   @Override
   public Class<?> associatedResourceType(DependentResourceSpec spec) {
+    // Falling back to the reflection-based default (DependentResourceFactory.super) isn't an
+    // option here: it requires a no-arg constructor, which constructor-injected dependent
+    // resources - the whole point of this factory - don't have. So a throwaway instance still
+    // has to be created through Spring, but unlike AutowireCapableBeanFactory.createBean(Class),
+    // it must also be destroyed afterward, since the contract puts destruction on the caller and
+    // JOSDK never gets a reference to this instance to do so itself.
     final DependentResource instance =
         (DependentResource) beanFactory.createBean(spec.getDependentResourceClass());
-    return instance.resourceType();
+    try {
+      return instance.resourceType();
+    } finally {
+      beanFactory.destroyBean(instance);
+    }
   }
 }

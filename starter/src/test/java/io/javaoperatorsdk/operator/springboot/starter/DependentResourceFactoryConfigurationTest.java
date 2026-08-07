@@ -31,4 +31,22 @@ class DependentResourceFactoryConfigurationTest {
             .getBean(DependentResourceFactory.class)
             .isSameAs(custom));
   }
+
+  @Test
+  void doesNotCreateSpringDependentResourceFactoryWhenDisabledByProperty() {
+    // with no factory bean to fall back on, JOSDK keeps using its own reflection-based default.
+    runner.withPropertyValues("javaoperatorsdk.dependent-resources.spring-managed=false")
+        .run(ctx -> assertThat(ctx).doesNotHaveBean(DependentResourceFactory.class));
+  }
+
+  @Test
+  void userProvidedDependentResourceFactoryStillAppliesWhenDisabledByProperty() {
+    DependentResourceFactory<?, ?> custom = mock(DependentResourceFactory.class);
+
+    runner.withPropertyValues("javaoperatorsdk.dependent-resources.spring-managed=false")
+        .withBean("customDependentResourceFactory", DependentResourceFactory.class, () -> custom)
+        .run(ctx -> assertThat(ctx)
+            .getBean(DependentResourceFactory.class)
+            .isSameAs(custom));
+  }
 }

@@ -12,7 +12,8 @@ import io.javaoperatorsdk.operator.springboot.starter.model.TestResource;
 public class SpringManagedDependentReconciler implements Reconciler<TestResource> {
 
   @Override
-  public UpdateControl<TestResource> reconcile(TestResource testResource, Context context) {
+  public UpdateControl<TestResource> reconcile(TestResource testResource,
+      Context<TestResource> context) {
     return UpdateControl.noUpdate();
   }
 }

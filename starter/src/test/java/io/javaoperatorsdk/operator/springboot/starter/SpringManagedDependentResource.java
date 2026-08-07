@@ -11,6 +11,15 @@ import io.javaoperatorsdk.operator.springboot.starter.model.TestResource;
 public class SpringManagedDependentResource
     extends CRUDKubernetesDependentResource<ConfigMap, TestResource> {
 
+  /**
+   * {@link SpringDependentResourceFactory#associatedResourceType} also constructs (and destroys) a
+   * throwaway instance of this class during controller registration, before the workflow - and with
+   * it, the instance {@link SpringDependentResourceFactory#createFrom} produces - is built. So this
+   * field always ends up holding the real, workflow-registered instance, not the throwaway one;
+   * {@link SpringManagedDependentResourceIntegrationTest#managedDependentResourceIsStillConfiguredByJosdk()}
+   * cross-checks that by asserting {@link #configuration()} is present, which only the workflow
+   * instance goes through.
+   */
   static final AtomicReference<SpringManagedDependentResource> LAST_CREATED_INSTANCE =
       new AtomicReference<>();
 

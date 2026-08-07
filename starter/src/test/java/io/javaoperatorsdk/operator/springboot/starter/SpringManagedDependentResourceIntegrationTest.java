@@ -1,5 +1,6 @@
 package io.javaoperatorsdk.operator.springboot.starter;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,14 @@ public class SpringManagedDependentResourceIntegrationTest {
 
   @Autowired
   private GreetingService greetingService;
+
+  @AfterAll
+  static void resetLastCreatedInstance() {
+    // The static holder is only ever written to during context startup (a single dependent
+    // resource instance for the whole test class), but clear it once the class is done so it
+    // can't leak into other test classes sharing the JVM.
+    SpringManagedDependentResource.LAST_CREATED_INSTANCE.set(null);
+  }
 
   @Test
   void managedDependentResourceIsCreatedThroughSpringAndReceivesInjectedBean() {
