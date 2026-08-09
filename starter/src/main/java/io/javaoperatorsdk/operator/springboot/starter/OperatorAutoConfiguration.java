@@ -187,8 +187,11 @@ public class OperatorAutoConfiguration {
   @ConditionalOnBean(DependentResourceFactory.class)
   public Consumer<ConfigurationServiceOverrider> dependentResourceFactoryConfigServiceOverrider(
       ObjectProvider<DependentResourceFactory<?, ?>> dependentResourceFactory) {
+    // ifAvailable() still throws NoUniqueBeanDefinitionException when multiple non-primary
+    // factories are present (same as a direct injection would); ifUnique() degrades gracefully
+    // instead, leaving JOSDK's own default factory in place if the user's beans are ambiguous.
     return overrider -> dependentResourceFactory
-        .ifAvailable(overrider::withDependentResourceFactory);
+        .ifUnique(overrider::withDependentResourceFactory);
   }
 
   private void overrideFromProps(ControllerConfigurationOverrider<?> overrider,
