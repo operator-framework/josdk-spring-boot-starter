@@ -27,6 +27,7 @@ public class OperatorConfigurationProperties {
   private Boolean ssaBasedCreateUpdateMatchForDependentResources;
   private Boolean useSSAToPatchPrimaryResource;
   private Boolean cloneSecondaryResourcesWhenGettingFromCache;
+  private DependentResourcesProperties dependentResources = new DependentResourcesProperties();
 
   public KubernetesClientProperties getClient() {
     return client;
@@ -152,6 +153,14 @@ public class OperatorConfigurationProperties {
     this.crd = crd;
   }
 
+  public DependentResourcesProperties getDependentResources() {
+    return dependentResources;
+  }
+
+  public void setDependentResources(DependentResourcesProperties dependentResources) {
+    this.dependentResources = dependentResources;
+  }
+
   public static class CrdProperties {
 
     private boolean applyOnStartup;
@@ -186,6 +195,26 @@ public class OperatorConfigurationProperties {
 
     public void setSuffix(String suffix) {
       this.suffix = suffix;
+    }
+  }
+
+  public static class DependentResourcesProperties {
+
+    /**
+     * Whether managed dependent resources should be created through Spring's
+     * {@code AutowireCapableBeanFactory} (default), so that they can receive Spring-managed
+     * dependencies. Set to {@code false} to fall back to Java Operator SDK's default behavior,
+     * which only requires a no-arg constructor and does not run Spring's dependency injection or
+     * bean lifecycle callbacks (e.g. {@code @PostConstruct}) on dependent resource instances.
+     */
+    private boolean springManaged = true;
+
+    public boolean isSpringManaged() {
+      return springManaged;
+    }
+
+    public void setSpringManaged(boolean springManaged) {
+      this.springManaged = springManaged;
     }
   }
 }

@@ -9,8 +9,11 @@ import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,6 +37,7 @@ import io.javaoperatorsdk.operator.api.config.DefaultResourceClassResolver;
 import io.javaoperatorsdk.operator.api.config.ResourceClassResolver;
 import io.javaoperatorsdk.operator.api.monitoring.Metrics;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResourceFactory;
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
 import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.CRDTransformer;
 import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.DefaultCRDApplier;
@@ -164,6 +168,30 @@ public class OperatorAutoConfiguration {
           .checkingCRDAndValidateLocalModel(configuration.getCheckCrdAndValidateLocalModel())
           .withKubernetesClient(kubernetesClient);
     };
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(DependentResourceFactory.class)
+  @ConditionalOnProperty(
+      prefix = "javaoperatorsdk.dependent-resources",
+      name = "spring-managed",
+      havingValue = "true",
+      matchIfMissing = true)
+  public DependentResourceFactory<?, ?> dependentResourceFactory(
+      AutowireCapableBeanFactory beanFactory) {
+    return new SpringDependentResourceFactory(beanFactory);
+  }
+
+  @Bean
+  @Order(1)
+  @ConditionalOnBean(DependentResourceFactory.class)
+  public Consumer<ConfigurationServiceOverrider> dependentResourceFactoryConfigServiceOverrider(
+      ObjectProvider<DependentResourceFactory<?, ?>> dependentResourceFactory) {
+    // ifAvailable() still throws NoUniqueBeanDefinitionException when multiple non-primary
+    // factories are present (same as a direct injection would); ifUnique() degrades gracefully
+    // instead, leaving JOSDK's own default factory in place if the user's beans are ambiguous.
+    return overrider -> dependentResourceFactory
+        .ifUnique(overrider::withDependentResourceFactory);
   }
 
   private void overrideFromProps(ControllerConfigurationOverrider<?> overrider,

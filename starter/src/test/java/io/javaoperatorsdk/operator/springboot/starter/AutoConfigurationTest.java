@@ -123,6 +123,12 @@ public class AutoConfigurationTest {
   }
 
   @Test
+  public void createsSpringDependentResourceFactoryByDefault() {
+    assertThat(operator.getConfigurationService().dependentResourceFactory())
+        .isInstanceOf(SpringDependentResourceFactory.class);
+  }
+
+  @Test
   public void reconcilersAreDiscovered() {
     assertEquals(1, reconcilers.size());
     assertTrue(reconcilers.get(0) instanceof TestReconciler);
