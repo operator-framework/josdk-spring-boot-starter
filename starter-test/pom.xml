@@ -61,6 +61,10 @@
     </dependency>
     <dependency>
       <groupId>io.fabric8</groupId>
+      <artifactId>kube-api-test</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.fabric8</groupId>
       <artifactId>kubernetes-server-mock</artifactId>
     </dependency>
     <dependency>
