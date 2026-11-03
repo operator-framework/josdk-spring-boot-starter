@@ -28,7 +28,7 @@ jobs:
           RELEASE_VERSION: ${{ github.event.release.tag_name }}
 
       - name: Publish to Apache Maven Central
-        run: mvn package deploy -Prelease
+        run: mvn package deploy -Prelease -Dmaven.repository.credentialScope=id
         env:
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_CENTRAL_TOKEN: ${{ secrets.NEXUS_PASSWORD }}
