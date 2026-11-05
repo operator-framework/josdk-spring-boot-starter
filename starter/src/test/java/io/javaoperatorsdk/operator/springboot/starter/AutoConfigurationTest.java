@@ -66,6 +66,15 @@ public class AutoConfigurationTest {
   }
 
   @Test
+  public void appliesKubernetesClientPropertiesToClientConfig() {
+    final var clientConfig = kubernetesClient.getConfiguration();
+    assertEquals("user", clientConfig.getUsername());
+    assertEquals("password", clientConfig.getPassword());
+    assertEquals("token", clientConfig.getOauthToken());
+    assertThat(clientConfig.getMasterUrl()).startsWith("http://master.url");
+  }
+
+  @Test
   public void loadsRetryPropertiesProperly() {
     final var retryProperties =
         config.getReconcilers().get(ReconcilerUtilsInternal.getNameFor(TestReconciler.class))
