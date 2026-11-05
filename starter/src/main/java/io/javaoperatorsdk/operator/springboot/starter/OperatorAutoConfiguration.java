@@ -257,6 +257,7 @@ public class OperatorAutoConfiguration {
           clientCfg.getMasterUrl().ifPresent(config::withMasterUrl);
           clientCfg.getUsername().ifPresent(config::withUsername);
           clientCfg.getPassword().ifPresent(config::withPassword);
+          clientCfg.getOauthToken().ifPresent(config::withOauthToken);
 
           if (configCustomizer != null) {
             configCustomizer.customize(config);
