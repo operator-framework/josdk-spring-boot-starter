@@ -42,7 +42,7 @@ import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
 import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.CRDTransformer;
 import io.javaoperatorsdk.operator.springboot.starter.CRDApplier.DefaultCRDApplier;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableConfigurationProperties(OperatorConfigurationProperties.class)
